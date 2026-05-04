@@ -1,0 +1,116 @@
+const SHEET_NAME = "BTCTransactions"; 
+const SETTINGS_SHEET_NAME = "Settings";
+
+// [FAST LOADING] รวมการเรียก Spreadsheet ไว้ที่เดียว เพื่อลดภาระการดึงข้อมูลจาก Server
+function getSheets() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let txSheet = ss.getSheetByName(SHEET_NAME);
+  let setSheet = ss.getSheetByName(SETTINGS_SHEET_NAME);
+  
+  // เช็คและสร้าง Sheet แบบรวบรัด (ถ้ามี Sheet อยู่แล้วโค้ดส่วนนี้จะข้ามไปเลย ทำให้ไวขึ้น)
+  if (!txSheet) {
+    txSheet = ss.insertSheet(SHEET_NAME);
+    txSheet.appendRow(["Timestamp", "Date", "Price (USD)", "Amount (USD)", "Amount (BTC)"]);
+    txSheet.setColumnWidths(1, 5, 150);
+  }
+  if (!setSheet) {
+    setSheet = ss.insertSheet(SETTINGS_SHEET_NAME);
+    setSheet.appendRow(["Key", "Value"]);
+    setSheet.appendRow(["BTC_GOAL", 1.0]); 
+  }
+  
+  return { txSheet, setSheet };
+}
+
+function doGet(e) {
+  try {
+    // 1. เรียกใช้งาน Sheets ทั้งหมดในคำสั่งเดียว
+    const sheets = getSheets();
+    const sheet = sheets.txSheet;
+    const settingsSheet = sheets.setSheet;
+    
+    const lastRow = sheet.getLastRow();
+    let resultTransactions = [];
+    
+    // 2. ใช้ Bulk Read และระบุจำนวนคอลัมน์ชัดเจน (5 คอลัมน์) เพื่อไม่ต้องเสียเวลาหา LastColumn
+    if (lastRow > 1) {
+      const data = sheet.getRange(2, 1, lastRow - 1, 5).getValues();
+      
+      // 3. ใช้ For Loop พื้นฐานแทน .map().filter() เพื่อเร่งความเร็วประมวลผลของ V8 Engine ให้สูงสุด
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        if (row[1] && row[2]) { // เช็คว่ามี Date และ Price
+          resultTransactions.push({
+            rowNumber: i + 2,
+            date: row[1],
+            price: row[2],
+            amountUSD: row[3],
+            amountBTC: row[4]
+          });
+        }
+      }
+    }
+
+    // 4. ดึงข้อมูล Settings 
+    let btcGoal = 1.0;
+    const settingsData = settingsSheet.getDataRange().getValues();
+    for (let i = 0; i < settingsData.length; i++) {
+      if (settingsData[i][0] === "BTC_GOAL") {
+        btcGoal = Number(settingsData[i][1]) || 1.0;
+        break;
+      }
+    }
+
+    const responseData = { transactions: resultTransactions, btcGoal: btcGoal };
+    return ContentService.createTextOutput(JSON.stringify(responseData)).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ error: error.message })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    const sheets = getSheets();
+    const sheet = sheets.txSheet;
+    const requestData = JSON.parse(e.postData.contents);
+    
+    if (requestData.action === 'add') {
+      const { date, price, amountUSD, amountBTC } = requestData;
+      sheet.appendRow([new Date(), date, Number(price), Number(amountUSD), Number(amountBTC)]);
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", action: "add" })).setMimeType(ContentService.MimeType.JSON);
+
+    } else if (requestData.action === 'delete') {
+      const rowToDelete = requestData.row;
+      if (rowToDelete && rowToDelete > 1) { 
+        sheet.deleteRow(rowToDelete);
+        return ContentService.createTextOutput(JSON.stringify({ status: "success", action: "delete" })).setMimeType(ContentService.MimeType.JSON);
+      } else {
+        throw new Error("Invalid row number.");
+      }
+
+    } else if (requestData.action === 'setGoal') {
+      const newGoal = Number(requestData.goal);
+      const settingsSheet = sheets.setSheet;
+      const settingsData = settingsSheet.getDataRange().getValues();
+      let found = false;
+      
+      for (let i = 0; i < settingsData.length; i++) {
+        if (settingsData[i][0] === "BTC_GOAL") {
+          settingsSheet.getRange(i + 1, 2).setValue(newGoal);
+          found = true;
+          break;
+        }
+      }
+      
+      if (!found) {
+        settingsSheet.appendRow(["BTC_GOAL", newGoal]);
+      }
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", action: "setGoal", goal: newGoal })).setMimeType(ContentService.MimeType.JSON);
+
+    } else {
+      throw new Error("Invalid action parameter: " + requestData.action);
+    }
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: error.message })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
