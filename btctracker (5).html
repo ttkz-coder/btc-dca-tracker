@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#faf9f6">
+    <title>BTC Portfolio Tracker Pro</title>
+    
+    <link rel="apple-touch-icon" href="BTC icon.png">
+    <link rel="icon" type="image/png" href="BTC icon.png">
+    <meta name="apple-mobile-web-app-title" content="BTC Tracker">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #faf9f6;
+            --primary-orange: #f59e0b;
+            --primary-yellow: #fde047;
+            --black: #111827;
+            --white: #ffffff;
+            --border-width: 3px;
+            --shadow-color: #111827;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--black);
+            background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+            background-size: 20px 20px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .safe-padding {
+            padding-top: max(1rem, env(safe-area-inset-top));
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
+
+        .neo-card {
+            background-color: var(--white);
+            border: var(--border-width) solid var(--black);
+            border-radius: 16px;
+            box-shadow: 6px 6px 0px var(--shadow-color);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .neo-card-orange {
+            background-color: var(--primary-orange);
+            border: var(--border-width) solid var(--black);
+            border-radius: 16px;
+            box-shadow: 8px 8px 0px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neo-card-purple {
+            background-color: #8b5cf6;
+            border: var(--border-width) solid var(--black);
+            border-radius: 16px;
+            box-shadow: 6px 6px 0px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+            color: white;
+        }
+
+        .neo-btn {
+            background-color: var(--white);
+            border: var(--border-width) solid var(--black);
+            border-radius: 12px;
+            box-shadow: 4px 4px 0px var(--shadow-color);
+            font-weight: 700;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+
+        .neo-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px var(--shadow-color);
+        }
+
+        .neo-btn-primary { background-color: var(--black); color: var(--white); }
+        .neo-btn-danger { background-color: #ef4444; color: var(--white); }
+        .neo-btn-warning { background-color: var(--primary-yellow); color: var(--black); }
+        .neo-btn-success { background-color: #22c55e; color: var(--white); }
+
+        .neo-input {
+            background-color: var(--white);
+            border: var(--border-width) solid var(--black);
+            border-radius: 8px;
+            padding: 0.75rem;
+            box-shadow: 3px 3px 0px var(--shadow-color);
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 16px; 
+            appearance: none;
+        }
+
+        .neo-input:focus {
+            outline: none;
+            transform: translate(3px, 3px);
+            box-shadow: 0px 0px 0px var(--shadow-color);
+            background-color: #fffbeb;
+        }
+
+        .currency-toggle-group {
+            display: flex;
+            border: var(--border-width) solid var(--black);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 3px 3px 0px var(--shadow-color);
+        }
+
+        .currency-toggle-group button {
+            flex: 1;
+            padding: 0.5rem;
+            font-weight: 700;
+            background-color: var(--white);
+            border-right: var(--border-width) solid var(--black);
+            transition: all 0.2s;
+        }
+        
+        .currency-toggle-group button:last-child { border-right: none; }
+        .currency-toggle-group button.active { background-color: var(--black); color: var(--white); }
+
+        .btc-watermark {
+            position: absolute;
+            right: -20px;
+            bottom: -40px;
+            font-size: 14rem;
+            color: rgba(0, 0, 0, 0.1);
+            pointer-events: none;
+            transform: rotate(-10deg);
+        }
+
+        th { border-bottom: var(--border-width) solid var(--black); font-weight: 800; height: 50px; }
+        td { border-bottom: 2px dashed #d1d5db; font-weight: 500; }
+
+        .loader {
+            border: 5px solid var(--black);
+            border-top: 5px solid var(--primary-orange);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .table-scroll { scrollbar-width: auto; scrollbar-color: var(--primary-orange) transparent; }
+        .table-scroll::-webkit-scrollbar { width: 14px; height: 14px; }
+        .table-scroll::-webkit-scrollbar-track { background-color: transparent; border-left: var(--border-width) solid var(--black); }
+        .table-scroll::-webkit-scrollbar-thumb { background-color: var(--primary-orange); border: 3px solid var(--black); border-radius: 8px; }
+        
+        .progress-container {
+            border: 3px solid var(--black);
+            border-radius: 999px;
+            background-color: var(--white);
+            box-shadow: 4px 4px 0px var(--shadow-color);
+            overflow: hidden;
+            position: relative;
+            height: 28px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: repeating-linear-gradient(45deg, var(--primary-orange), var(--primary-orange) 10px, #f5b041 10px, #f5b041 20px);
+            border-right: 3px solid var(--black);
+            transition: width 1s ease-in-out;
+            width: 0%;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .swal2-popup.neo-swal { border: 4px solid var(--black) !important; border-radius: 16px !important; box-shadow: 8px 8px 0px var(--black) !important; font-family: 'Kanit', sans-serif !important; }
+        .neo-swal-confirm { background-color: var(--black) !important; color: var(--white) !important; border: 3px solid var(--black) !important; border-radius: 8px !important; box-shadow: 4px 4px 0px var(--black) !important; font-weight: 700 !important; transition: all 0.1s !important; }
+        .neo-swal-confirm:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--black) !important; }
+        .neo-swal-cancel { background-color: #ef4444 !important; color: var(--white) !important; border: 3px solid var(--black) !important; border-radius: 8px !important; box-shadow: 4px 4px 0px var(--black) !important; font-weight: 700 !important; transition: all 0.1s !important; }
+        .neo-swal-cancel:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--black) !important; }
+        .swal2-input.neo-swal-input { border: 3px solid var(--black) !important; border-radius: 8px !important; box-shadow: 3px 3px 0px var(--black) !important; }
+        .neo-toast { border: 3px solid var(--black) !important; border-radius: 8px !important; box-shadow: 4px 4px 0px var(--black) !important; font-family: 'Kanit', sans-serif !important; }
+        .mt-safe-toast { margin-top: max(1.5rem, env(safe-area-inset-top)) !important; }
+
+        .modal-enter { animation: modalFadeIn 0.2s ease-out forwards; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body class="min-h-[100dvh] flex justify-center pb-20 md:pb-0">
+    <div class="w-full max-w-6xl px-4 md:px-8 safe-padding overflow-x-hidden">
+        
+        <header class="flex justify-between items-center mb-6 md:mb-8 pb-4 border-b-[3px] border-black sticky top-0 z-40 bg-[#faf9f6]/95 backdrop-blur-sm pt-4 md:pt-6">
+            <div class="flex items-center gap-3 md:gap-4">
+                <div class="w-12 h-12 md:w-14 md:h-14 bg-orange-500 rounded-xl border-[3px] border-black shadow-[4px_4px_0px_#111827] flex items-center justify-center">
+                    <i class="fa-brands fa-bitcoin text-2xl md:text-3xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-3xl lg:text-4xl font-extrabold leading-none tracking-tight">BTC Tracker</h1>
+                    <span class="text-[10px] md:text-xs text-gray-500 font-bold tracking-[0.2em] uppercase">Portfolio</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-1.5 md:gap-2">
+                <!-- Current Badge Display (Desktop) -->
+                <div id="currentBadgeDisplay_desktop" class="hidden md:flex items-center gap-2 bg-gray-100 border-[3px] border-black rounded-xl px-3 py-1.5 shadow-[2px_2px_0px_#111827] transition-all">
+                    <span id="badgeIcon_desktop" class="text-2xl">🥚</span>
+                    <div class="flex flex-col items-start justify-center">
+                        <span class="text-[10px] font-bold text-gray-700 leading-none mb-0.5">ยศปัจจุบัน</span>
+                        <span id="badgeName_desktop" class="text-sm font-extrabold leading-none text-black">มือใหม่</span>
+                    </div>
+                </div>
+
+                <button id="privacyToggleBtn" onclick="togglePrivacy()" class="neo-btn px-2 py-1.5 md:px-4 md:py-3 flex items-center justify-center text-sm md:text-base lg:text-lg" title="ซ่อน/แสดงยอดเงิน">
+                    <i id="privacyToggleIcon" class="fas fa-eye text-black"></i>
+                </button>
+                <button id="currencyToggleBtn" class="neo-btn px-2 py-1.5 md:px-5 md:py-3 flex items-center gap-2 text-sm md:text-base lg:text-lg">
+                    <i class="fas fa-exchange-alt"></i> <span id="currencyToggleText">THB</span>
+                </button>
+            </div>
+        </header>
+
+        <div id="loading" class="flex flex-col justify-center items-center h-64">
+            <div class="loader mb-4"></div>
+            <p class="font-bold text-gray-500">กำลังดึงข้อมูลระบบ...</p>
+        </div>
+
+        <main id="mainContent" class="hidden pb-12">
+            
+            <!-- Orange Card & Goal Area -->
+            <div class="mb-6 md:mb-8">
+                <div class="neo-card-orange p-5 md:p-8 lg:p-10 mb-4 md:mb-6">
+                    <i class="fa-brands fa-bitcoin btc-watermark text-9xl md:text-[14rem] lg:text-[20rem]"></i>
+                    
+                    <!-- Current Badge Display (Mobile) -->
+                    <div id="currentBadgeDisplay_mobile" class="absolute top-4 right-4 flex md:hidden items-center gap-1.5 border-2 border-black rounded-lg px-2 py-1 shadow-[2px_2px_0px_#111827] transition-all z-20 bg-gray-100">
+                        <span id="badgeIcon_mobile" class="text-lg">🥚</span>
+                        <div class="flex flex-col items-start justify-center">
+                            <span class="text-[8px] font-bold text-gray-700 leading-none mb-0.5">ยศปัจจุบัน</span>
+                            <span id="badgeName_mobile" class="text-[10px] font-extrabold leading-none text-black">มือใหม่</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center relative z-10 gap-3 pr-24 sm:pr-0">
+                        <h2 class="font-bold text-black text-base md:text-xl lg:text-2xl">มูลค่าพอร์ตปัจจุบัน</h2>
+                        <div class="flex items-center gap-2 self-start sm:self-auto">
+                            <div id="currentPriceBadge" class="bg-black text-white px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-[10px] md:text-sm lg:text-base font-bold border-2 border-black flex items-center gap-2">
+                                1 BTC = <span id="currentPriceText">...</span>
+                            </div>
+                            <button onclick="refreshBTCPrice()" id="refreshPriceBtn" class="bg-white text-black w-8 h-8 md:w-10 md:h-10 rounded-lg border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#111827] transition-all">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-4 md:mt-6 relative z-10">
+                        <p id="portfolioValue" class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight">฿0</p>
+                    </div>
+                    <div class="mt-6 md:mt-8 flex flex-wrap items-center gap-3 relative z-10">
+                        <div class="bg-white px-3 py-1.5 md:px-5 md:py-3 rounded-xl border-[3px] border-black shadow-[3px_3px_0px_#111827]">
+                            <p class="text-[9px] md:text-sm text-gray-500 font-bold mb-0.5 md:mb-1">กำไร/ขาดทุน</p>
+                            <p id="unrealizedProfit" class="font-extrabold text-lg md:text-2xl lg:text-3xl text-red-500">-</p>
+                        </div>
+                        <div id="unrealizedProfitPercent" class="bg-red-100 text-red-600 font-bold px-3 py-2 md:px-4 md:py-3 rounded-lg border-2 md:border-[3px] border-red-500 text-xs md:text-base lg:text-lg">0.00%</div>
+                    </div>
+                </div>
+
+                <!-- Halving Countdown Banner -->
+                <div class="mb-4 md:mb-6 px-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-meteor text-purple-600 text-lg"></i>
+                        <h3 class="font-bold text-sm md:text-base text-gray-700">Bitcoin Halving ครั้งต่อไป</h3>
+                    </div>
+                    <div class="neo-card-purple p-4 md:p-6">
+                        <i class="fa-solid fa-cube absolute -right-4 -bottom-8 text-8xl text-black opacity-20 rotate-12"></i>
+                        <div class="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-4 lg:gap-8">
+                            <div class="w-full lg:w-1/2 flex flex-col justify-center">
+                                <p class="text-xs md:text-sm text-purple-200 font-bold mb-1">บล็อกปัจจุบัน: <span id="currentBlockHeight" class="text-white">กำลังโหลด...</span> / <span id="nextHalvingBlockHeight">...</span></p>
+                                <div class="flex items-center gap-2 mb-2 md:mb-3">
+                                    <span class="text-xs font-bold bg-black text-white px-2 py-1 rounded border-2 border-black shadow-[2px_2px_0px_#ffffff]">เหลืออีก <span id="blocksRemaining" class="text-yellow-400">...</span> บล็อก</span>
+                                </div>
+                                <div class="w-full bg-black border-2 border-black rounded-full h-3 md:h-4 overflow-hidden relative shadow-[2px_2px_0px_#ffffff]">
+                                    <div id="halvingProgressBar" class="bg-yellow-400 h-full transition-all duration-1000" style="width: 0%"></div>
+                                    <p id="halvingProgressText" class="absolute inset-0 flex items-center justify-center text-[9px] md:text-[10px] font-bold text-white mix-blend-difference">0%</p>
+                                </div>
+                            </div>
+                            <div class="w-full lg:w-1/2">
+                                <div id="halvingCountdownContainer" class="flex justify-center lg:justify-end gap-2 text-center">
+                                    <p class="font-bold text-sm">กำลังคำนวณเวลา...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goal Bar -->
+                <div class="mb-4 md:mb-6 px-1">
+                    <div class="flex justify-between items-end mb-2">
+                        <h3 class="font-bold text-sm md:text-base text-gray-700"><i class="fas fa-flag-checkered mr-2"></i>เป้าหมายสะสม BTC</h3>
+                        <button id="goalBtn" onclick="setGoal()" class="text-xs md:text-sm font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full border-2 border-blue-600 hover:bg-blue-200 transition-colors">
+                            <i class="fas fa-cog mr-1"></i> ตั้งเป้าหมาย
+                        </button>
+                    </div>
+                    <div class="progress-container">
+                        <div id="goalProgressBar" class="progress-bar"></div>
+                        <p id="goalProgressText" class="absolute inset-0 flex items-center justify-center font-extrabold text-xs md:text-sm z-10 text-black drop-shadow-md"></p>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
+                    <div class="neo-card p-4 md:p-6 lg:p-8 col-span-1">
+                        <div class="flex items-center gap-2 text-gray-500 font-bold mb-1 md:mb-3">
+                            <i class="fas fa-coins text-sm md:text-lg"></i>
+                            <span class="text-[10px] md:text-sm lg:text-base">จำนวน BTC</span>
+                        </div>
+                        <p id="totalBTC" class="text-lg md:text-3xl lg:text-4xl font-extrabold tracking-tight break-words">-</p>
+                    </div>
+                    <div class="neo-card p-4 md:p-6 lg:p-8 col-span-1">
+                        <div class="flex items-center gap-2 text-gray-500 font-bold mb-1 md:mb-3">
+                            <i class="fas fa-wallet text-sm md:text-lg"></i>
+                            <span class="text-[10px] md:text-sm lg:text-base">ต้นทุนรวม</span>
+                        </div>
+                        <p id="totalInvested" class="text-lg md:text-3xl lg:text-4xl font-extrabold tracking-tight break-words">-</p>
+                    </div>
+                    <div class="neo-card p-4 md:p-6 lg:p-8 col-span-2 lg:col-span-1 flex flex-row lg:flex-col justify-between items-center lg:items-start gap-2">
+                        <div class="flex items-center gap-2 md:gap-3 text-gray-600 font-bold lg:mb-4">
+                            <i class="fas fa-crosshairs text-blue-600 md:text-lg"></i>
+                            <span class="text-sm md:text-base lg:text-base">ราคาต้นทุนเฉลี่ย</span>
+                        </div>
+                        <p id="avgCost" class="text-xl md:text-3xl lg:text-4xl font-extrabold text-blue-600 tracking-tight">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts & Table Area (ขยายเต็มหน้าจอ) -->
+            <div class="flex flex-col gap-6 md:gap-8">
+                
+                <!-- Chart -->
+                <div class="neo-card p-4 md:p-6 w-full">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i class="fas fa-chart-area text-blue-500 text-xl md:text-2xl"></i>
+                        <h2 class="text-lg md:text-xl font-extrabold">การเติบโตของการสะสม BTC</h2>
+                    </div>
+                    <div class="w-full h-[200px] md:h-[300px] relative">
+                        <canvas id="portfolioChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- History Table -->
+                <div class="flex flex-col w-full">
+                    <div class="flex items-center justify-between mb-3 px-2">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-list-ul text-orange-500 text-xl md:text-2xl"></i>
+                            <h2 class="text-xl md:text-2xl font-extrabold">ประวัติพอร์ต</h2>
+                        </div>
+                        <div class="flex gap-2">
+                            <!-- ปุ่มเพิ่มรายการในส่วนหัวตาราง -->
+                            <button onclick="openAddModal()" class="neo-btn neo-btn-primary px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-2 text-xs md:text-sm">
+                                <i class="fas fa-plus"></i> <span class="hidden sm:inline">เพิ่มรายการ</span>
+                            </button>
+                            <button onclick="exportToCSV()" class="neo-btn neo-btn-success px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-2 text-xs md:text-sm">
+                                <i class="fas fa-download"></i> <span class="hidden sm:inline">ส่งออก CSV</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative w-full rounded-xl border-[3px] border-black bg-black overflow-hidden shadow-[4px_4px_0px_#111827]">
+                        <div class="table-scroll overflow-y-auto overflow-x-hidden max-h-[400px] lg:max-h-[600px] relative z-10 w-full h-full bg-white">
+                            <table class="w-full text-left bg-white text-xs md:text-sm">
+                                <thead class="sticky top-0 bg-black text-white z-20">
+                                    <tr>
+                                        <th scope="col" class="px-2 md:px-4 py-3 text-xs md:text-sm whitespace-nowrap">วันที่</th>
+                                        <th scope="col" class="hidden md:table-cell px-3 md:px-4 text-sm">ราคาที่ซื้อ (<span class="table-currency-label">USD</span>)</th>
+                                        <th scope="col" class="hidden md:table-cell px-3 md:px-4 text-sm text-right">เงินลงทุน</th>
+                                        <th scope="col" class="md:hidden px-2 py-3 text-xs whitespace-nowrap">ทุน/ราคา</th>
+                                        <th scope="col" class="hidden md:table-cell px-3 md:px-4 text-sm text-right">ได้ BTC</th>
+                                        <th scope="col" class="hidden md:table-cell px-3 md:px-4 text-sm text-right">กำไร/ขาดทุน</th>
+                                        <th scope="col" class="md:hidden px-2 py-3 text-xs text-right whitespace-nowrap">BTC/กำไร</th>
+                                        <th scope="col" class="px-2 md:px-4 py-3 text-center text-xs md:text-sm">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody" class="bg-white"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Floating Action Button (FAB) สำหรับมือถือ -->
+        <button onclick="openAddModal()" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-14 h-14 md:w-16 md:h-16 bg-green-500 rounded-full border-[3px] border-black shadow-[4px_4px_0px_#111827] flex items-center justify-center text-2xl md:text-3xl text-white z-40 active:translate-y-1 active:shadow-[0px_0px_0px_#111827] transition-all hover:bg-green-600" title="เพิ่มรายการ">
+            <i class="fas fa-plus"></i>
+        </button>
+
+    </div>
+
+    <!-- ------------------------------------------------ -->
+    <!-- Add/Edit Transaction Modal (Pop-up) -->
+    <!-- ------------------------------------------------ -->
+    <div id="addTransactionModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="neo-card p-5 md:p-6 lg:p-8 w-full max-w-lg bg-[#faf9f6] relative modal-enter my-auto max-h-[90vh] overflow-y-auto">
+            
+            <button onclick="closeAddModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-red-500 text-white border-2 border-black rounded-lg shadow-[2px_2px_0px_#111827] active:translate-y-[2px] active:shadow-none transition-all">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="flex items-center gap-3 mb-6 pr-8">
+                <i id="formIcon" class="fas fa-plus-circle text-green-500 text-xl md:text-2xl"></i>
+                <h2 id="formTitle" class="text-xl md:text-2xl font-extrabold">เพิ่มรายการซื้อ</h2>
+            </div>
+            
+            <form id="transactionForm" class="space-y-4 md:space-y-5">
+                <div>
+                    <label for="date" class="block text-sm md:text-base font-bold text-gray-700 mb-1.5">วันที่</label>
+                    <input type="date" id="date" class="neo-input w-full md:py-3" required>
+                </div>
+                <div>
+                    <div class="flex justify-between items-end mb-1.5">
+                        <label for="price" class="block text-sm md:text-base font-bold text-gray-700">ราคาที่ซื้อ (<span class="price-currency-label">USD</span>)</label>
+                        <button type="button" onclick="fillLivePrice()" class="text-[10px] md:text-xs font-bold bg-yellow-400 text-black border-2 border-black rounded px-2 py-1 shadow-[2px_2px_0px_#111827] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1 hover:bg-yellow-300">
+                            <i class="fas fa-bolt text-red-600"></i> ราคา Live
+                        </button>
+                    </div>
+                    <input type="text" inputmode="decimal" id="price" placeholder="ราคาต่อ 1 BTC" class="neo-input w-full md:py-3 transition-colors duration-300" required>
+                </div>
+                <div>
+                    <label class="block text-sm md:text-base font-bold text-gray-700 mb-1.5">จำนวนเงินที่ลงทุน</label>
+                    <div class="flex flex-col sm:flex-row gap-2 md:gap-3">
+                        <input type="text" inputmode="decimal" id="amount" placeholder="0.00" class="neo-input w-full md:py-3" required>
+                        <div id="amountCurrencyToggle" class="currency-toggle-group flex-shrink-0 sm:w-32">
+                            <button type="button" data-currency="USD" class="active md:py-3">USD</button>
+                            <button type="button" data-currency="THB" class="md:py-3">THB</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-3 mt-6 pt-2">
+                    <button type="submit" id="submitBtn" class="neo-btn neo-btn-primary w-full py-3 md:py-4 flex items-center justify-center text-lg">
+                        <span id="submitBtnText">บันทึกข้อมูล</span>
+                        <div id="submitSpinner" class="hidden w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin ml-2"></div>
+                    </button>
+                    <button type="button" onclick="closeAddModal()" class="neo-btn bg-gray-200 text-gray-800 w-full py-2 flex items-center justify-center text-sm">
+                        ยกเลิก / ปิด
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- ------------------------------------------------ -->
+
+<script>
+// ---------- CONFIGURATION ----------
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwU6yZFJPf_TfkLl47OSJp-LqEeXpBGXzdrquyfmmCBRwovJ8rcsoQDwzNUk5RrtK0C/exec'; 
+
+// ---------- STATE MANAGEMENT ----------
+let transactions = [];
+let btcPriceData = { price: 0, change: 0 };
+let thbRate = 36.0; 
+let displayCurrency = 'USD'; 
+let isDataLoaded = false;
+let amountInputCurrency = 'USD'; 
+let editingRow = null; 
+let btcGoal = 1.0; 
+let lineChart = null; 
+let isPrivacyMode = localStorage.getItem('isPrivacyMode') === 'true'; 
+
+let halvingEstimatedDate = null;
+let countdownInterval = null;
+
+const loadingEl = document.getElementById('loading');
+const mainContentEl = document.getElementById('mainContent');
+const form = document.getElementById('transactionForm');
+const historyTableBody = document.getElementById('historyTableBody');
+const submitBtn = document.getElementById('submitBtn');
+const submitBtnText = document.getElementById('submitBtnText');
+const submitSpinner = document.getElementById('submitSpinner');
+const priceInput = document.getElementById('price');
+const amountInput = document.getElementById('amount');
+const modalEl = document.getElementById('addTransactionModal');
+
+const Toast = Swal.mixin({
+    toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
+    timerProgressBar: true, customClass: { popup: 'neo-toast mt-safe-toast' }
+});
+
+function showNeoAlert(title, text, icon) {
+    Swal.fire({
+        title, text, icon,
+        customClass: { popup: 'neo-swal', confirmButton: 'neo-swal-confirm', cancelButton: 'neo-swal-cancel' }
+    });
+}
+
+function openAddModal() {
+    modalEl.classList.remove('hidden');
+    modalEl.classList.add('flex');
+}
+
+function closeAddModal() {
+    modalEl.classList.add('hidden');
+    modalEl.classList.remove('flex');
+    cancelEdit(); 
+}
+
+modalEl.addEventListener('click', (e) => {
+    if (e.target === modalEl) closeAddModal();
+});
+
+function fillLivePrice() {
+    if (!btcPriceData || btcPriceData.price === 0) {
+        Toast.fire({ icon: 'warning', title: 'ยังไม่สามารถดึงราคาได้ โปรดรอสักครู่' });
+        return;
+    }
+    
+    let currentLivePrice = btcPriceData.price;
+    if (amountInputCurrency === 'THB') {
+        currentLivePrice = currentLivePrice * thbRate;
+    }
+    
+    const formattedPrice = formatInp(currentLivePrice.toFixed(2));
+    priceInput.value = formattedPrice;
+    
+    priceInput.classList.add('bg-yellow-100');
+    setTimeout(() => {
+        priceInput.classList.remove('bg-yellow-100');
+    }, 500);
+}
+
+function togglePrivacy() {
+    isPrivacyMode = !isPrivacyMode;
+    localStorage.setItem('isPrivacyMode', isPrivacyMode);
+    updatePrivacyIcon();
+    if (isDataLoaded) fullRender();
+}
+
+function updatePrivacyIcon() {
+    const icon = document.getElementById('privacyToggleIcon');
+    if (isPrivacyMode) {
+        icon.className = 'fas fa-eye-slash text-gray-500';
+    } else {
+        icon.className = 'fas fa-eye text-black';
+    }
+}
+
+async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            if (i === retries - 1) throw error;
+            await new Promise(res => setTimeout(res, delay * (i + 1)));
+        }
+    }
+}
+
+async function fetchAPIs() {
+    try {
+        const exchangeRatePromise = fetchWithRetry('https://api.exchangerate-api.com/v4/latest/USD')
+            .then(data => { if (data?.rates?.THB) thbRate = data.rates.THB; })
+            .catch(() => console.log("ใช้เรทอัตราแลกเปลี่ยนสำรอง"));
+
+        const btcPricePromise = fetchWithRetry('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true')
+            .then(data => { if (data?.bitcoin) btcPriceData = { price: data.bitcoin.usd, change: data.bitcoin.usd_24h_change }; })
+            .catch(() => console.log("ใช้ราคา BTC สำรอง"));
+
+        await Promise.allSettled([exchangeRatePromise, btcPricePromise]);
+    } catch (e) {
+        console.error("API Error:", e);
+    }
+}
+
+// ---------- 🔥 BITCOIN HALVING (NEW ROBUST API FETCH) 🔥 ----------
+async function fetchBlockHeight() {
+    // ใช้เทคนิค API Fallback: หากเว็บแรกล่ม จะพยายามดึงจากแหล่งที่ 2 และ 3 อัตโนมัติ
+    const endpoints = [
+        async () => {
+            const res = await fetch('https://blockchain.info/q/getblockcount');
+            if (!res.ok) throw new Error('API 1 Failed');
+            return parseInt(await res.text());
+        },
+        async () => {
+            const res = await fetch('https://mempool.space/api/blocks/tip/height');
+            if (!res.ok) throw new Error('API 2 Failed');
+            return parseInt(await res.text());
+        },
+        async () => {
+            const res = await fetch('https://api.blockcypher.com/v1/btc/main');
+            if (!res.ok) throw new Error('API 3 Failed');
+            const data = await res.json();
+            return data.height;
+        }
+    ];
+
+    for (const fetcher of endpoints) {
+        try {
+            const currentBlock = await fetcher();
+            if (currentBlock && !isNaN(currentBlock)) {
+                updateHalvingData(currentBlock);
+                return; // ถ้าดึงสำเร็จ ให้ออกจากฟังก์ชันเลย
+            }
+        } catch (e) {
+            console.warn("สลับไปใช้ API ถัดไป...");
+        }
+    }
+    
+    // ถ้าพังทุกอันจริงๆ (ไม่มีเน็ต หรือโดนบล็อกหมด) ให้โชว์ Error ที่หน้าจอ
+    document.getElementById('currentBlockHeight').textContent = "ไม่สามารถเชื่อมต่อได้";
+    document.getElementById('halvingCountdownContainer').innerHTML = `<p class="font-bold text-sm text-red-300">เกิดข้อผิดพลาดในการดึงข้อมูล</p>`;
+}
+
+function updateHalvingData(currentBlock) {
+    const HALVING_INTERVAL = 210000;
+    
+    // สูตรคำนวณ Block แบบแม่นยำ 100%
+    const currentEpoch = Math.floor(currentBlock / HALVING_INTERVAL);
+    const nextHalvingBlock = (currentEpoch + 1) * HALVING_INTERVAL;
+    const blocksLeft = nextHalvingBlock - currentBlock;
+    
+    // 1 บล็อกเฉลี่ย 10 นาที (600 วินาที)
+    const secondsLeft = blocksLeft * 10 * 60;
+    halvingEstimatedDate = new Date(Date.now() + (secondsLeft * 1000));
+    
+    const blocksInCurrentEpoch = currentBlock % HALVING_INTERVAL;
+    const progressPercent = (blocksInCurrentEpoch / HALVING_INTERVAL) * 100;
+
+    document.getElementById('currentBlockHeight').textContent = new Intl.NumberFormat('th-TH').format(currentBlock);
+    document.getElementById('nextHalvingBlockHeight').textContent = new Intl.NumberFormat('th-TH').format(nextHalvingBlock);
+    document.getElementById('blocksRemaining').textContent = new Intl.NumberFormat('th-TH').format(blocksLeft);
+    document.getElementById('halvingProgressBar').style.width = `${progressPercent}%`;
+    document.getElementById('halvingProgressText').textContent = `${progressPercent.toFixed(2)}%`;
+
+    if (!countdownInterval) {
+        countdownInterval = setInterval(updateHalvingCountdown, 1000);
+    }
+    updateHalvingCountdown();
+}
+
+function updateHalvingCountdown() {
+    if (!halvingEstimatedDate) return;
+    const now = new Date();
+    const diff = halvingEstimatedDate - now;
+    const container = document.getElementById('halvingCountdownContainer');
+
+    if (diff <= 0) { container.innerHTML = `<p class="font-extrabold text-xl text-yellow-400">Halving is Here!</p>`; return; }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const mins = Math.floor((diff / 1000 / 60) % 60);
+    const secs = Math.floor((diff / 1000) % 60);
+
+    const d = days.toString().padStart(2, '0');
+    const h = hours.toString().padStart(2, '0');
+    const m = mins.toString().padStart(2, '0');
+    const s = secs.toString().padStart(2, '0');
+
+    container.innerHTML = `
+        <div class="bg-black border-2 border-white rounded-lg p-2 min-w-[55px] shadow-[2px_2px_0px_#ffffff]"><span class="text-lg md:text-xl font-bold">${d}</span><div class="text-[9px] md:text-[10px]">วัน</div></div>
+        <div class="bg-black border-2 border-white rounded-lg p-2 min-w-[55px] shadow-[2px_2px_0px_#ffffff]"><span class="text-lg md:text-xl font-bold">${h}</span><div class="text-[9px] md:text-[10px]">ชม.</div></div>
+        <div class="bg-black border-2 border-white rounded-lg p-2 min-w-[55px] shadow-[2px_2px_0px_#ffffff]"><span class="text-lg md:text-xl font-bold">${m}</span><div class="text-[9px] md:text-[10px]">นาที</div></div>
+        <div class="bg-yellow-400 text-black border-2 border-black rounded-lg p-2 min-w-[55px] shadow-[2px_2px_0px_#111827]"><span class="text-lg md:text-xl font-bold">${s}</span><div class="text-[9px] md:text-[10px] font-bold">วิ.</div></div>
+    `;
+}
+
+// ------------------------------------------------------------------
+
+async function refreshBTCPrice() {
+    const btn = document.getElementById('refreshPriceBtn');
+    btn.classList.add('animate-spin'); btn.disabled = true;
+    try {
+        const data = await fetchWithRetry('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        if (data?.bitcoin) { 
+            btcPriceData = { price: data.bitcoin.usd, change: data.bitcoin.usd_24h_change };
+            renderSummary(); renderBadges(); renderHistory();
+            Toast.fire({ icon: 'success', title: 'อัปเดตราคาแล้ว' });
+        }
+    } catch (e) { Toast.fire({ icon: 'error', title: 'อัปเดตล้มเหลว' }); } 
+    finally { btn.classList.remove('animate-spin'); btn.disabled = false; }
+}
+
+async function fetchTransactions() {
+    if (!SCRIPT_URL.startsWith('https')) { showNeoAlert('ระบบ', 'กรุณาตั้งค่า URL ใน GAS', 'warning'); return false; }
+    try {
+        const data = await fetchWithRetry(SCRIPT_URL);
+        if (Array.isArray(data)) { transactions = data.sort((a, b) => new Date(b.date) - new Date(a.date)); } 
+        else if (data && data.transactions) {
+            transactions = data.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            btcGoal = data.btcGoal || 1.0; 
+        }
+        return true;
+    } catch (error) { console.error("Fetch Error:", error); return false; }
+}
+
+function calculateSummary() {
+    const totalUSD = transactions.reduce((sum, t) => sum + parseFloat(t.amountUSD || 0), 0);
+    const totalBTC = transactions.reduce((sum, t) => sum + parseFloat(t.amountBTC || 0), 0);
+    if (totalBTC === 0) return { avgCost: 0, portfolioValue: 0, totalBTC: 0, unrealizedProfit: 0, unrealizedProfitPercent: 0, totalInvested: 0 };
+    const avgCost = totalUSD / totalBTC;
+    const portfolioValue = btcPriceData.price * totalBTC;
+    const unrealizedProfit = portfolioValue - totalUSD;
+    const unrealizedProfitPercent = totalUSD > 0 ? (unrealizedProfit / totalUSD) * 100 : 0;
+    return { avgCost, portfolioValue, totalBTC, unrealizedProfit, unrealizedProfitPercent, totalInvested: totalUSD };
+}
+
+async function setGoal() {
+    const { value: newGoal } = await Swal.fire({
+        title: 'ตั้งเป้าหมายสะสม BTC', input: 'text', 
+        inputAttributes: { inputmode: 'decimal', placeholder: 'เช่น 0.5 หรือ 1.0' },
+        inputValue: btcGoal, showCancelButton: true, confirmButtonText: 'บันทึก', cancelButtonText: 'ยกเลิก',
+        inputValidator: (value) => {
+            const parsed = parseFloat(value.replace(/,/g, ''));
+            if (!value || isNaN(parsed) || parsed <= 0) return 'กรุณากรอกตัวเลขที่มากกว่า 0';
+        },
+        customClass: { popup: 'neo-swal', confirmButton: 'neo-swal-confirm', cancelButton: 'neo-swal-cancel', input: 'neo-swal-input' }
+    });
+    
+    if (newGoal) {
+        const parsedGoal = parseFloat(newGoal.replace(/,/g, ''));
+        const btn = document.getElementById('goalBtn');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> บันทึก...'; btn.disabled = true;
+        try {
+            const res = await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'setGoal', goal: parsedGoal }) });
+            if (res.status === 'success') { btcGoal = parsedGoal; renderGoal(); Toast.fire({ icon: 'success', title: 'บันทึกเป้าหมายแล้ว' }); } 
+            else { throw new Error(res.message); }
+        } catch (e) { showNeoAlert('บันทึกไม่สำเร็จ!', 'โปรดอัปเดตโค้ด Google Apps Script', 'error'); }
+        finally { btn.innerHTML = originalHtml; btn.disabled = false; }
+    }
+}
+
+function renderGoal() {
+    const s = calculateSummary();
+    const percent = (s.totalBTC / btcGoal) * 100;
+    document.getElementById('goalProgressBar').style.width = `${Math.min(percent, 100)}%`;
+    document.getElementById('goalProgressText').textContent = isPrivacyMode ? `*** / *** BTC (***%)` : `${s.totalBTC.toFixed(4)} / ${btcGoal} BTC (${percent.toFixed(2)}%)`;
+}
+
+// ---------- BADGES SYSTEM ----------
+const badgesConfig = [
+    { id: 'humpback', icon: '🐋', color: 'bg-indigo-300', name: 'วาฬหลังค่อม', condition: (s) => s.totalBTC >= 1000 },
+    { id: 'whale', icon: '🐳', color: 'bg-blue-300', name: 'วาฬ (Whale)', condition: (s) => s.totalBTC >= 100 },
+    { id: 'shark', icon: '🦈', color: 'bg-gray-200', name: 'ฉลาม (Shark)', condition: (s) => s.totalBTC >= 10 },
+    { id: 'dolphin', icon: '🐬', color: 'bg-cyan-100', name: 'โลมา (Dolphin)', condition: (s) => s.totalBTC >= 1 },
+    { id: 'fish', icon: '🐟', color: 'bg-blue-100', name: 'ปลา (Fish)', condition: (s) => s.totalBTC >= 0.1 },
+    { id: 'octopus', icon: '🐙', color: 'bg-purple-100', name: 'หมึก (Octopus)', condition: (s) => s.totalBTC >= 0.05 },
+    { id: 'crab', icon: '🦀', color: 'bg-red-100', name: 'ปู (Crab)', condition: (s) => s.totalBTC >= 0.01 },
+    { id: 'shrimp', icon: '🦐', color: 'bg-orange-100', name: 'กุ้ง (Shrimp)', condition: (s) => s.totalBTC >= 0.001 },
+    { id: 'plankton', icon: '🦠', color: 'bg-green-100', name: 'แพลงก์ตอน', condition: (s) => s.totalBTC < 0.001 },
+    { id: 'egg', icon: '🥚', color: 'bg-gray-100', name: 'มือใหม่', condition: (s) => true } 
+];
+
+function renderBadges() {
+    const s = calculateSummary();
+    const currentBadge = badgesConfig.find(b => b.condition(s));
+    
+    if (currentBadge) {
+        ['desktop', 'mobile'].forEach(type => {
+            const badgeDisplay = document.getElementById(`currentBadgeDisplay_${type}`);
+            const badgeIcon = document.getElementById(`badgeIcon_${type}`);
+            const badgeName = document.getElementById(`badgeName_${type}`);
+            
+            if (!badgeDisplay) return;
+
+            badgeIcon.textContent = isPrivacyMode ? '🔒' : currentBadge.icon;
+            badgeName.textContent = isPrivacyMode ? '***' : currentBadge.name;
+            
+            const bgClass = isPrivacyMode ? 'bg-gray-200' : currentBadge.color;
+            
+            if (type === 'desktop') {
+                badgeDisplay.className = `hidden md:flex items-center gap-2 border-[3px] border-black rounded-xl px-3 py-1.5 shadow-[2px_2px_0px_#111827] transition-all ${bgClass}`;
+            } else {
+                badgeDisplay.className = `absolute top-4 right-4 flex md:hidden items-center gap-1.5 border-2 border-black rounded-lg px-2 py-1 shadow-[2px_2px_0px_#111827] transition-all z-20 ${bgClass}`;
+            }
+        });
+    }
+}
+
+// RENDERING
+function formatCurrency(v, cur = displayCurrency) {
+    const opt = { style: 'currency', currency: cur, minimumFractionDigits: 2, maximumFractionDigits: 2 };
+    return cur === 'THB' ? (v * thbRate).toLocaleString('th-TH', opt) : v.toLocaleString('en-US', opt);
+}
+
+function renderSummary() {
+    const s = calculateSummary();
+    
+    document.getElementById('currentPriceText').textContent = formatCurrency(btcPriceData.price, 'USD');
+    document.getElementById('avgCost').textContent = isPrivacyMode ? '***' : formatCurrency(s.avgCost);
+    document.getElementById('portfolioValue').textContent = isPrivacyMode ? '***' : formatCurrency(s.portfolioValue);
+    document.getElementById('totalBTC').textContent = isPrivacyMode ? '***' : s.totalBTC.toFixed(6);
+    document.getElementById('totalInvested').textContent = isPrivacyMode ? '***' : formatCurrency(s.totalInvested);
+    
+    const pEl = document.getElementById('unrealizedProfit');
+    const ppEl = document.getElementById('unrealizedProfitPercent');
+    
+    pEl.textContent = isPrivacyMode ? '***' : formatCurrency(s.unrealizedProfit);
+    ppEl.textContent = `${s.unrealizedProfit >= 0 ? '+' : ''}${s.unrealizedProfitPercent.toFixed(2)}%`;
+    pEl.className = `font-extrabold text-lg md:text-2xl lg:text-3xl ${s.unrealizedProfit >= 0 ? 'text-green-600' : 'text-red-500'}`;
+    ppEl.className = `${s.unrealizedProfit >= 0 ? 'bg-green-100 border-green-600 text-green-700' : 'bg-red-100 border-red-500 text-red-600'} font-extrabold px-3 py-2 rounded-lg border-2 text-xs md:text-base`;
+}
+
+function renderChart() {
+    const ctx = document.getElementById('portfolioChart').getContext('2d');
+    if (lineChart) lineChart.destroy();
+    
+    const sorted = [...transactions].sort((a,b)=>new Date(a.date)-new Date(b.date));
+    let acc = 0; const labels = [], data = [];
+    sorted.forEach(t => { acc += parseFloat(t.amountBTC); labels.push(new Date(t.date).toLocaleDateString('th-TH', {month:'short',year:'2-digit'})); data.push(acc); });
+    
+    lineChart = new Chart(ctx, {
+        type: 'line', 
+        data: { labels, datasets: [{ label: 'BTC', data, borderColor: '#111827', backgroundColor: 'rgba(245,158,11,0.2)', borderWidth: 4, fill: true, tension: 0.3 }] },
+        options: { 
+            responsive: true, maintainAspectRatio: false, 
+            plugins: { 
+                legend: { display: false },
+                tooltip: { callbacks: { label: function(c) { return isPrivacyMode ? `ยอดสะสม: *** BTC` : `ยอดสะสม: ${c.parsed.y.toFixed(4)} BTC`; } } }
+            },
+            scales: { x: { grid: { display: false } }, y: { border: { dash: [4, 4] }, grid: { color: '#e5e7eb' }, ticks: { callback: function(v) { return isPrivacyMode ? '***' : v; } } } }
+        }
+    });
+}
+
+function renderHistory() {
+    historyTableBody.innerHTML = '';
+    if (transactions.length === 0) { historyTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-10 text-gray-500 font-bold">ไม่มีข้อมูล</td></tr>'; return; }
+    
+    transactions.forEach(t => {
+        const pr = parseFloat(t.price), inv = parseFloat(t.amountUSD), btc = parseFloat(t.amountBTC);
+        const diff = (btc * btcPriceData.price) - inv, per = inv > 0 ? (diff / inv) * 100 : 0;
+        const isP = diff >= 0, color = isP ? 'text-green-600' : 'text-red-500';
+        
+        const maskedInv = isPrivacyMode ? '***' : formatCurrency(inv);
+        const maskedBtc = isPrivacyMode ? '***' : btc.toFixed(6);
+        const maskedDiff = isPrivacyMode ? '***' : `${isP ? '+' : ''}${formatCurrency(diff)}`;
+        const maskedPer = `${isP ? '↑' : '↓'} ${Math.abs(per).toFixed(2)}%`;
+        
+        const row = document.createElement('tr');
+        row.className = "hover:bg-gray-50 transition-colors";
+        row.innerHTML = `
+            <td class="px-2 md:px-4 py-3 text-xs md:text-sm whitespace-nowrap align-top md:align-middle">${new Date(t.date).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'})}</td>
+            <td class="hidden md:table-cell px-3 md:px-4 py-3 align-middle">${formatCurrency(pr, 'USD')}</td>
+            <td class="hidden md:table-cell px-3 md:px-4 py-3 font-bold text-right align-middle">${maskedInv}</td>
+            <td class="md:hidden px-2 py-3 align-top"><div class="font-extrabold text-sm text-gray-800">${maskedInv}</div><div class="text-xs font-bold text-gray-500 mt-1">@${formatCurrency(pr, 'USD')}</div></td>
+            <td class="hidden md:table-cell px-3 md:px-4 py-3 font-bold text-orange-600 text-right align-middle">${maskedBtc}</td>
+            <td class="hidden md:table-cell px-3 md:px-4 py-3 text-right align-middle"><div class="flex flex-col items-end"><span class="font-extrabold ${color}">${maskedDiff}</span><span class="text-xs font-bold ${color} mt-0.5">${maskedPer}</span></div></td>
+            <td class="md:hidden px-2 py-3 text-right align-top"><div class="font-extrabold text-orange-600 text-sm">${maskedBtc}</div><div class="flex flex-col items-end mt-1"><span class="font-bold ${color} text-xs">${maskedDiff}</span><span class="text-[10px] sm:text-xs font-bold ${color} mt-0.5">${maskedPer}</span></div></td>
+            <td class="px-2 md:px-4 py-3 text-center align-top md:align-middle"><div class="flex flex-col sm:flex-row justify-center items-center gap-2"><button class="neo-btn neo-btn-warning w-8 h-8 flex items-center justify-center text-xs" onclick="editTransaction(${t.rowNumber})" title="แก้ไข"><i class="fas fa-pencil-alt"></i></button><button class="neo-btn neo-btn-danger w-8 h-8 flex items-center justify-center text-xs" onclick="deleteTransaction(${t.rowNumber})" title="ลบ"><i class="fas fa-times"></i></button></div></td>
+        `;
+        historyTableBody.appendChild(row);
+    });
+}
+
+function fullRender() {
+    isDataLoaded = true; loadingEl.classList.add('hidden'); mainContentEl.classList.remove('hidden');
+    renderSummary(); renderGoal(); renderBadges(); renderChart(); renderHistory();
+}
+
+// HELPERS
+function unformat(v) { return v.toString().replace(/,/g, ''); }
+function formatInp(v) { let p = v.toString().replace(/[^0-9.]/g, '').split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); return p.join('.'); }
+[priceInput, amountInput].forEach(i => i.addEventListener('input', e => { e.target.value = formatInp(unformat(e.target.value)); }));
+
+// ACTIONS
+form.addEventListener('submit', async e => {
+    e.preventDefault(); submitBtn.disabled = true; submitBtnText.classList.add('hidden'); submitSpinner.classList.remove('hidden');
+    const date = document.getElementById('date').value; let pr = parseFloat(unformat(priceInput.value)), am = parseFloat(unformat(amountInput.value));
+    if (isNaN(pr) || isNaN(am)) { showNeoAlert('เตือน', 'กรอกเลขให้ถูกต้อง', 'warning'); resetBtn(); return; }
+    if (amountInputCurrency === 'THB') { am /= thbRate; pr /= thbRate; }
+    try {
+        if (editingRow) await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', row: editingRow }) });
+        const res = await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date, price: pr, amountUSD: am, amountBTC: am/pr }) });
+        if (res.status === 'success') { await fetchTransactions(); fullRender(); closeAddModal(); Toast.fire({ icon: 'success', title: 'บันทึกแล้ว' }); }
+    } catch (e) { showNeoAlert('ผิดพลาด', 'บันทึกไม่ได้', 'error'); } finally { resetBtn(); }
+});
+
+function resetBtn() { submitBtn.disabled = false; submitBtnText.classList.remove('hidden'); submitSpinner.classList.add('hidden'); }
+
+async function deleteTransaction(rn) {
+    const res = await Swal.fire({ title: 'ลบรายการ?', icon: 'warning', showCancelButton: true, confirmButtonText: 'ลบ', customClass: { popup: 'neo-swal', confirmButton: 'neo-swal-cancel', cancelButton: 'neo-swal-confirm' } });
+    if (res.isConfirmed) {
+        Swal.fire({ title: 'กำลังอัปเดตข้อมูล...', text: 'โปรดรอสักครู่', allowOutsideClick: false, showConfirmButton: false, customClass: { popup: 'neo-swal' }, didOpen: () => Swal.showLoading() });
+        try {
+            const r = await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', row: rn }) });
+            if (r.status === 'success') { transactions = transactions.filter(t => t.rowNumber !== rn); fullRender(); Swal.fire({ icon: 'success', title: 'ลบรายการสำเร็จ', timer: 1500, showConfirmButton: false, customClass: { popup: 'neo-swal' } }); } 
+            else { throw new Error("Server error"); }
+        } catch (e) { await fetchTransactions(); fullRender(); showNeoAlert('ผิดพลาด', 'เซิร์ฟเวอร์ขัดข้อง', 'error'); }
+    }
+}
+
+function editTransaction(rn) {
+    const t = transactions.find(x => x.rowNumber === rn); if (!t) return;
+    editingRow = rn; const d = new Date(t.date);
+    document.getElementById('date').value = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,0)}-${d.getDate().toString().padStart(2,0)}`;
+    setCurrencyToggle('USD'); priceInput.value = formatInp(t.price); amountInput.value = formatInp(t.amountUSD);
+    document.getElementById('formTitle').textContent = "แก้ไขรายการ"; document.getElementById('formTitle').className = "text-xl md:text-2xl font-extrabold text-yellow-600";
+    document.getElementById('formIcon').className = "fas fa-edit text-yellow-500 text-xl md:text-2xl";
+    document.getElementById('submitBtnText').textContent = "อัปเดตข้อมูล"; submitBtn.className = "neo-btn neo-btn-warning w-full py-3 md:py-4 flex items-center justify-center text-lg";
+    openAddModal(); 
+}
+
+function cancelEdit() {
+    editingRow = null; form.reset(); document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('formTitle').textContent = "เพิ่มรายการซื้อ"; document.getElementById('formTitle').className = "text-xl md:text-2xl font-extrabold text-black";
+    document.getElementById('formIcon').className = "fas fa-plus-circle text-green-500 text-xl md:text-2xl";
+    document.getElementById('submitBtnText').textContent = "บันทึกข้อมูล"; submitBtn.className = "neo-btn neo-btn-primary w-full py-3 md:py-4 flex items-center justify-center text-lg";
+}
+
+function setCurrencyToggle(c) {
+    amountInputCurrency = c; document.querySelectorAll('#amountCurrencyToggle button').forEach(b => b.classList.toggle('active', b.dataset.currency === c));
+    document.querySelectorAll('.price-currency-label').forEach(l => l.textContent = c);
+}
+document.getElementById('amountCurrencyToggle').addEventListener('click', e => e.target.tagName === 'BUTTON' && setCurrencyToggle(e.target.dataset.currency));
+document.getElementById('currencyToggleBtn').addEventListener('click', () => { 
+    displayCurrency = displayCurrency === 'USD' ? 'THB' : 'USD'; 
+    document.getElementById('currencyToggleText').textContent = displayCurrency === 'USD' ? 'THB' : 'USD'; 
+    
+    if (!modalEl.classList.contains('hidden') && priceInput.value !== '') {
+        fillLivePrice();
+    }
+    
+    renderSummary(); renderHistory(); 
+});
+
+// INITIALIZE
+async function initializeApp() {
+    updatePrivacyIcon();
+    document.getElementById('date').valueAsDate = new Date();
+    
+    // เริ่มต้นระบบดึงข้อมูลบล็อก
+    fetchBlockHeight();
+    setInterval(fetchBlockHeight, 60000);
+
+    const timeout = setTimeout(() => { if (!isDataLoaded) fullRender(); }, 10000);
+    try { await fetchAPIs(); await fetchTransactions(); } 
+    finally { clearTimeout(timeout); fullRender(); }
+}
+initializeApp();
+
+function exportToCSV() {
+    let csv = "data:text/csv;charset=utf-8,Date,Price(USD),Amount(USD),Amount(BTC)\n";
+    transactions.forEach(t => { const d = new Date(t.date); csv += `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,0)}-${d.getDate().toString().padStart(2,0)},${t.price},${t.amountUSD},${t.amountBTC}\n`; });
+    const link = document.createElement("a"); link.href = encodeURI(csv); link.download = "portfolio.csv"; link.click();
+}
+</script>
+</body>
+</html>
