@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="th" class="dark">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0a0a0a">
-    <title>BTC Wealth Tracker VIP</title>
+    <meta name="theme-color" content="#0B0E14">
+    <title>WealthTracker | VIP Portfolio</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -15,34 +15,23 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Use Kanit for Thai text, and a sleek font like Outfit for numbers -->
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['Kanit', 'sans-serif'],
-                        num: ['Outfit', 'sans-serif'],
+                        num: ['Inter', 'sans-serif'],
                     },
                     colors: {
-                        gold: {
-                            100: '#FDF7E2',
-                            300: '#F4D77D',
-                            500: '#D4AF37', // Classic Gold
-                            700: '#997A15',
-                            900: '#4D3D0A',
-                        },
-                        dark: {
-                            900: '#0a0a0a',
-                            800: '#141414',
-                            700: '#1e1e1e',
-                        }
-                    },
-                    backgroundImage: {
-                        'gold-gradient': 'linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C)',
+                        dark: '#0B0E14',
+                        card: 'rgba(255, 255, 255, 0.03)',
+                        cardHover: 'rgba(255, 255, 255, 0.05)',
+                        gold: { 400: '#F5D061', 500: '#E2C063', 600: '#C8A145' },
+                        success: '#4CAF50',
+                        danger: '#FF4D4D'
                     }
                 }
             }
@@ -51,13 +40,14 @@
 
     <style>
         body {
-            background-color: #0a0a0a;
-            color: #e5e5e5;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(212, 175, 55, 0.05), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(212, 175, 55, 0.03), transparent 25%);
-            background-attachment: fixed;
+            background-color: #0B0E14;
+            color: #ffffff;
             -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden; /* ป้องกันการเลื่อนแนวนอน */
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(226, 192, 99, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(226, 192, 99, 0.05), transparent 25%);
+            background-attachment: fixed;
         }
 
         .safe-padding {
@@ -65,395 +55,352 @@
             padding-bottom: max(1rem, env(safe-area-inset-bottom));
         }
 
-        /* Glassmorphism Classes */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
+        /* Glass & Premium Cards */
+        .glass-card {
+            background: var(--card, rgba(255, 255, 255, 0.03));
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
             border-radius: 20px;
         }
 
-        .glass-panel:hover {
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            box-shadow: 0 4px 30px rgba(212, 175, 55, 0.05);
-            transition: all 0.4s ease;
-        }
-
-        /* VIP Card with 3D Tilt */
-        .vip-card {
-            background: linear-gradient(135deg, rgba(30,30,30,0.9), rgba(10,10,10,0.9));
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 24px;
+        .gold-border {
             position: relative;
-            transform-style: preserve-3d;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.1);
-            overflow: hidden;
         }
-
-        .vip-card::before {
+        .gold-border::before {
             content: '';
             position: absolute;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle at center, rgba(212,175,55,0.1) 0%, transparent 50%);
-            transform: translateZ(-1px);
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 20px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(226,192,99,0.5), rgba(255,255,255,0.05), rgba(226,192,99,0.1));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
             pointer-events: none;
         }
 
-        /* Gold Text Gradient */
+        /* 3D Tilt Effect Container */
+        .tilt-card-container {
+            perspective: 1000px;
+        }
+        .tilt-card {
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        /* Gradient Text */
         .text-gradient-gold {
-            background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728);
+            background: linear-gradient(135deg, #FFF 0%, #E2C063 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
-        /* Custom Inputs */
-        .premium-input {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
-            transition: all 0.3s ease;
-            font-family: 'Outfit', sans-serif;
-        }
+        /* Custom Scrollbar */
+        .table-scroll { scrollbar-width: thin; scrollbar-color: rgba(226,192,99,0.5) transparent; }
+        .table-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .table-scroll::-webkit-scrollbar-track { background-color: transparent; }
+        .table-scroll::-webkit-scrollbar-thumb { background-color: rgba(226,192,99,0.5); border-radius: 10px; }
 
-        .premium-input:focus {
-            outline: none;
-            border-color: #D4AF37;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
-        }
-
-        /* Buttons */
-        .btn-gold {
-            background: linear-gradient(135deg, #D4AF37, #997A15);
-            color: #000;
-            font-weight: 600;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
-        }
-        .btn-gold:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
-            filter: brightness(1.1);
-        }
-        .btn-gold:active { transform: translateY(1px); }
-
-        .btn-glass {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #e5e5e5;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-        .btn-glass:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(212, 175, 55, 0.3); color: #D4AF37;}
-
-        /* Table Styles */
-        th { border-bottom: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-weight: 500; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; height: 50px; }
-        td { border-bottom: 1px solid rgba(255,255,255,0.05); font-family: 'Outfit', sans-serif; font-weight: 300;}
-        tr:hover td { background: rgba(212, 175, 55, 0.02); }
-
-        /* Progress Bar */
-        .progress-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 999px;
-            overflow: hidden;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-        }
-        .progress-fill-gold {
-            background: linear-gradient(90deg, #997A15, #FDF7E2, #D4AF37);
-            background-size: 200% 100%;
-            animation: shimmer 3s infinite linear;
-            box-shadow: 0 0 10px rgba(212,175,55,0.5);
-        }
-
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        
-        .loader-gold {
+        /* Loader */
+        .gold-loader {
             width: 48px;
             height: 48px;
-            border: 3px solid rgba(212,175,55,0.2);
-            border-bottom-color: #D4AF37;
+            border: 3px solid rgba(226,192,99,0.2);
+            border-bottom-color: #E2C063;
             border-radius: 50%;
             display: inline-block;
+            box-sizing: border-box;
             animation: rotation 1s linear infinite;
         }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* SweetAlert2 Premium Override */
-        .swal2-popup.premium-swal { background: rgba(20,20,20,0.95) !important; backdrop-filter: blur(20px) !important; border: 1px solid rgba(212,175,55,0.2) !important; border-radius: 20px !important; color: white !important; font-family: 'Kanit', sans-serif !important; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75) !important;}
-        .swal2-title { color: #D4AF37 !important; }
-        .swal2-html-container { color: #a3a3a3 !important; }
-        .swal2-confirm.premium-swal-confirm { background: linear-gradient(135deg, #D4AF37, #997A15) !important; color: black !important; border-radius: 12px !important; font-weight: 600 !important; }
-        .swal2-cancel.premium-swal-cancel { background: rgba(255,255,255,0.1) !important; color: white !important; border-radius: 12px !important; }
-        .swal2-input.premium-swal-input { background: rgba(0,0,0,0.5) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: white !important; border-radius: 10px !important; }
-        .swal2-input.premium-swal-input:focus { border-color: #D4AF37 !important; box-shadow: 0 0 10px rgba(212,175,55,0.2) !important; }
+        /* Inputs */
+        .premium-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s;
+        }
+        .premium-input:focus {
+            outline: none;
+            border-color: #E2C063;
+            box-shadow: 0 0 10px rgba(226, 192, 99, 0.2);
+        }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.5); }
+        /* SweetAlert Dark Theme overrides */
+        .swal2-popup.dark-swal { background: #161B22 !important; border: 1px solid rgba(226,192,99,0.3) !important; color: white !important; border-radius: 16px !important; }
+        .dark-swal-confirm { background: linear-gradient(135deg, #E2C063, #C8A145) !important; color: #0B0E14 !important; font-weight: bold !important; border-radius: 8px !important; }
+        .dark-swal-cancel { background: rgba(255,255,255,0.1) !important; color: white !important; border-radius: 8px !important; }
+        .swal2-input.dark-swal-input { background: rgba(0,0,0,0.3) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
     </style>
 </head>
-<body class="min-h-[100dvh] flex justify-center pb-20 md:pb-8">
-    <div class="w-full max-w-6xl px-4 md:px-8 safe-padding overflow-x-hidden">
+<body class="min-h-[100dvh] flex justify-center pb-20 md:pb-6">
+    <div class="w-full max-w-4xl px-4 md:px-6 safe-padding w-full overflow-hidden">
         
-        <header class="flex justify-between items-center mb-6 md:mb-10 pb-4 border-b border-white/10 sticky top-0 z-40 bg-[#0a0a0a]/80 backdrop-blur-md pt-4 md:pt-6">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-gold-900 to-gold-500 flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-                    <i class="fa-brands fa-bitcoin text-2xl text-black"></i>
+        <!-- HEADER SECTION (Responsive Fix) -->
+        <header class="mb-6 pt-4 relative z-40">
+            <!-- Top Status Bar -->
+            <div class="flex justify-between items-center mb-4 text-xs font-num">
+                <div class="flex items-center gap-1.5 text-success bg-success/10 px-3 py-1 rounded-full border border-success/20">
+                    <i class="fas fa-check-circle"></i> <span>Market synced</span>
                 </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-light tracking-wide text-white">WEALTH<span class="font-bold text-gradient-gold">TRACKER</span></h1>
-                    <p class="text-[10px] md:text-xs text-gray-400 tracking-[0.2em] uppercase">Private Portfolio</p>
+                
+                <!-- Fear & Greed Index -->
+                <div id="fgWidget" class="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
+                    <span class="text-gray-400 text-[10px] tracking-widest uppercase hidden sm:inline">Market Sentiment</span>
+                    <span id="fgValue" class="font-bold text-white">--</span>
+                    <span id="fgText" class="text-[10px] font-bold uppercase tracking-wider">Loading</span>
                 </div>
             </div>
-            
-            <div class="flex items-center gap-2 md:gap-4">
-                <!-- F&G Index (New Feature) -->
-                <div id="fngIndex" class="hidden md:flex flex-col items-end mr-4" title="Fear & Greed Index">
-                    <span class="text-[10px] text-gray-500 uppercase tracking-widest">Market Sentiment</span>
-                    <div class="flex items-center gap-2">
-                        <div id="fngDot" class="w-2 h-2 rounded-full bg-gray-500 shadow-[0_0_8px_currentColor]"></div>
-                        <span id="fngText" class="text-sm font-num font-semibold text-gray-300">Loading...</span>
+
+            <!-- Main Title & Controls -->
+            <div class="flex justify-between items-center gap-2">
+                <!-- Logo & Title -->
+                <div class="flex items-center gap-3 shrink-0">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center shadow-[0_0_15px_rgba(226,192,99,0.3)]">
+                        <i class="fa-brands fa-bitcoin text-xl md:text-2xl text-dark"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-base md:text-xl font-bold tracking-widest">WEALTH<span class="text-gold-500">TRACKER</span></h1>
+                        <p class="text-[9px] md:text-[10px] text-gray-500 tracking-[0.2em] uppercase">Private Portfolio</p>
                     </div>
                 </div>
-
-                <button id="privacyToggleBtn" onclick="togglePrivacy()" class="btn-glass w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full" title="ซ่อน/แสดงยอดเงิน">
-                    <i id="privacyToggleIcon" class="fas fa-eye text-gray-400"></i>
-                </button>
-                <button id="currencyToggleBtn" class="btn-glass px-4 h-10 md:h-12 flex items-center gap-2 rounded-full font-num text-sm">
-                    <i class="fas fa-exchange-alt text-gold-500"></i> <span id="currencyToggleText">THB</span>
-                </button>
+                
+                <!-- Action Buttons -->
+                <div class="flex items-center gap-2 shrink-0">
+                    <button id="privacyToggleBtn" onclick="togglePrivacy()" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                        <i id="privacyToggleIcon" class="fas fa-eye text-sm"></i>
+                    </button>
+                    <button id="currencyToggleBtn" class="h-9 md:h-10 px-3 md:px-4 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition-all font-num text-xs md:text-sm font-bold gap-2">
+                        <i class="fas fa-exchange-alt"></i> <span id="currencyToggleText">USD</span>
+                    </button>
+                </div>
             </div>
         </header>
 
-        <div id="loading" class="flex flex-col justify-center items-center h-[50vh]">
-            <div class="loader-gold mb-6"></div>
-            <p class="font-light text-gray-400 tracking-widest text-sm uppercase">Syncing Wealth Data...</p>
+        <!-- Loading State -->
+        <div id="loading" class="flex flex-col justify-center items-center h-64 mt-20">
+            <div class="gold-loader mb-6"></div>
+            <p class="text-gray-400 tracking-widest uppercase text-xs">Syncing Wealth Data...</p>
         </div>
 
-        <main id="mainContent" class="hidden pb-12">
+        <main id="mainContent" class="hidden flex-col gap-5 md:gap-6">
             
-            <div class="mb-8 md:mb-10">
-                <!-- VIP Main Card -->
-                <div id="vipCard" class="vip-card p-6 md:p-10 mb-6 md:mb-8 transition-transform duration-200 ease-out">
-                    <i class="fa-brands fa-bitcoin absolute -right-10 -bottom-10 text-[15rem] md:text-[25rem] text-white opacity-5 rotate-[-15deg] pointer-events-none"></i>
-                    
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-4">
-                        <div>
-                            <p class="text-xs md:text-sm text-gray-400 tracking-widest uppercase mb-1">Total Net Worth</p>
-                            <!-- ยศ (Rank) Badge -->
-                            <div id="currentBadgeDisplay" class="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1 mt-1 backdrop-blur-sm">
-                                <span id="badgeIcon" class="text-sm shadow-[0_0_10px_currentColor]">👑</span>
-                                <span id="badgeName" class="text-xs font-medium text-gold-300">Loading Rank...</span>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center gap-3 w-full md:w-auto">
-                            <div class="glass-panel px-4 py-2 flex-grow md:flex-grow-0 flex justify-between items-center gap-4">
-                                <span class="text-[10px] text-gray-400 uppercase">1 BTC</span>
-                                <span id="currentPriceText" class="font-num font-semibold text-white">...</span>
-                            </div>
-                            <button onclick="refreshBTCPrice()" id="refreshPriceBtn" class="btn-glass w-10 h-10 rounded-full flex items-center justify-center shrink-0">
-                                <i class="fas fa-sync-alt text-gold-500"></i>
-                            </button>
-                        </div>
-                    </div>
+            <!-- VIP PORTFOLIO CARD (3D Tilt) -->
+            <div class="tilt-card-container">
+                <div id="wealthCard" class="tilt-card glass-card gold-border p-6 md:p-8 relative overflow-hidden group">
+                    <!-- Watermark -->
+                    <i class="fa-brands fa-bitcoin absolute -right-10 -bottom-16 text-[15rem] opacity-5 rotate-[-15deg] group-hover:scale-110 transition-transform duration-700 pointer-events-none"></i>
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-gold-500/10 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
 
-                    <div class="mt-8 md:mt-12 relative z-10">
-                        <p id="portfolioValue" class="text-5xl md:text-7xl lg:text-8xl font-num font-bold text-gradient-gold tracking-tight drop-shadow-lg">฿0.00</p>
-                    </div>
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 class="text-xs md:text-sm text-gray-400 tracking-[0.15em] uppercase mb-3">Total Net Worth</h2>
+                                <div id="currentBadgeDisplay" class="inline-flex items-center gap-2 bg-white/10 border border-white/10 rounded-full px-3 py-1 backdrop-blur-sm">
+                                    <span id="badgeIcon" class="text-sm">🥚</span>
+                                    <span id="badgeName" class="text-xs font-bold text-gold-400 tracking-wide">มือใหม่</span>
+                                </div>
+                            </div>
+                            <!-- Current BTC Price -->
+                            <div class="flex flex-col items-end">
+                                <div class="flex items-center gap-2 bg-black/40 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-md">
+                                    <span class="text-[10px] text-gray-400">1 BTC</span>
+                                    <span id="currentPriceText" class="font-num text-xs md:text-sm font-bold text-white">$...</span>
+                                </div>
+                                <button onclick="refreshBTCPrice()" id="refreshPriceBtn" class="mt-2 text-[10px] text-gray-500 hover:text-gold-400 transition-colors flex items-center gap-1">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
 
-                    <div class="mt-8 md:mt-12 flex flex-wrap items-center gap-4 relative z-10 border-t border-white/10 pt-6">
-                        <div>
-                            <p class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest mb-1">Unrealized PnL</p>
-                            <p id="unrealizedProfit" class="font-num font-semibold text-xl md:text-3xl">-</p>
+                        <!-- Main Balance -->
+                        <div class="mb-8">
+                            <h1 id="portfolioValue" class="text-4xl md:text-6xl font-num font-bold text-gradient-gold tracking-tight">$0.00</h1>
                         </div>
-                        <div class="h-8 w-[1px] bg-white/10 mx-2"></div>
-                        <div>
-                            <p class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest mb-1">Return</p>
-                            <div id="unrealizedProfitPercent" class="font-num font-medium text-sm md:text-lg px-3 py-1 rounded-lg bg-white/5 border border-white/10">0.00%</div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 md:mb-10">
-                    <!-- Halving Neon Style -->
-                    <div class="glass-panel p-5 md:p-6 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl"></div>
-                        <div class="flex items-center justify-between mb-4 relative z-10">
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-cube text-purple-400"></i>
-                                <h3 class="font-light text-sm text-gray-300 uppercase tracking-widest">Next Halving</h3>
+                        <!-- PNL Section -->
+                        <div class="flex items-center gap-6 border-t border-white/10 pt-5">
+                            <div>
+                                <p class="text-[9px] md:text-[10px] text-gray-500 tracking-[0.15em] uppercase mb-1">Unrealized PnL</p>
+                                <p id="unrealizedProfit" class="font-num font-bold text-lg md:text-xl">-</p>
                             </div>
-                            <span class="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-1 rounded border border-purple-500/30 font-num">Blocks: <span id="blocksRemaining">...</span></span>
-                        </div>
-                        <div class="relative z-10">
-                            <div id="halvingCountdownContainer" class="flex gap-3 text-center mb-4 font-num justify-center md:justify-start">
-                                <p class="text-sm text-gray-500">Calculating time continuum...</p>
-                            </div>
-                            <div class="progress-track h-2">
-                                <div id="halvingProgressBar" class="h-full bg-gradient-to-r from-purple-900 to-purple-400 transition-all duration-1000 shadow-[0_0_10px_rgba(168,85,247,0.5)]" style="width: 0%"></div>
-                            </div>
-                            <div class="flex justify-between mt-2 text-[10px] text-gray-500 font-num">
-                                <span id="currentBlockHeight">...</span>
-                                <span id="nextHalvingBlockHeight">...</span>
+                            <div class="w-px h-8 bg-white/10"></div>
+                            <div>
+                                <p class="text-[9px] md:text-[10px] text-gray-500 tracking-[0.15em] uppercase mb-1">Return</p>
+                                <div id="unrealizedProfitPercent" class="font-num text-xs md:text-sm font-bold px-2.5 py-1 rounded-md border backdrop-blur-sm inline-block">0.00%</div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Goal Bar -->
-                    <div class="glass-panel p-5 md:p-6 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-gold-500/10 rounded-full blur-3xl"></div>
-                        <div class="flex justify-between items-center mb-6 relative z-10">
-                            <div class="flex items-center gap-2">
-                                <i class="fas fa-bullseye text-gold-500"></i>
-                                <h3 class="font-light text-sm text-gray-300 uppercase tracking-widest">Accumulation Goal</h3>
-                            </div>
-                            <button id="goalBtn" onclick="setGoal()" class="text-xs text-gold-400 hover:text-gold-300 transition-colors bg-gold-500/10 px-3 py-1.5 rounded-full border border-gold-500/20">
-                                <i class="fas fa-sliders-h mr-1"></i> Adjust
-                            </button>
-                        </div>
-                        <div class="relative z-10 mt-6">
-                            <div class="flex justify-between text-sm font-num mb-2">
-                                <span class="text-gray-400">Progress</span>
-                                <span id="goalProgressText" class="text-gold-400 font-semibold"></span>
-                            </div>
-                            <div class="progress-track h-3">
-                                <div id="goalProgressBar" class="h-full progress-fill-gold transition-all duration-1000 w-0"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-10">
-                    <div class="glass-panel p-5 md:p-6">
-                        <p class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest mb-2"><i class="fab fa-bitcoin mr-1"></i> Holdings</p>
-                        <p id="totalBTC" class="text-xl md:text-3xl font-num font-semibold text-white break-words">-</p>
-                    </div>
-                    <div class="glass-panel p-5 md:p-6">
-                        <p class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest mb-2"><i class="fas fa-wallet mr-1"></i> Total Cost</p>
-                        <p id="totalInvested" class="text-xl md:text-3xl font-num font-semibold text-gray-300 break-words">-</p>
-                    </div>
-                    <div class="glass-panel p-5 md:p-6 col-span-2 md:col-span-1">
-                        <p class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest mb-2"><i class="fas fa-crosshairs mr-1"></i> Avg. Price</p>
-                        <p id="avgCost" class="text-xl md:text-3xl font-num font-semibold text-gold-400 break-words">-</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Charts & Table Area -->
-            <div class="flex flex-col gap-8 md:gap-10">
+            <!-- HALVING & GOAL GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 
-                <!-- Chart -->
-                <div class="glass-panel p-5 md:p-8 w-full">
-                    <div class="flex items-center gap-3 mb-6">
-                        <i class="fas fa-chart-line text-gold-500"></i>
-                        <h2 class="text-lg font-light tracking-widest uppercase">Wealth Accumulation</h2>
-                    </div>
-                    <div class="w-full h-[250px] md:h-[350px] relative">
-                        <canvas id="portfolioChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- History Table -->
-                <div class="glass-panel p-4 md:p-8 w-full overflow-hidden">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                        <div class="flex items-center gap-3">
-                            <i class="fas fa-history text-gray-400"></i>
-                            <h2 class="text-lg font-light tracking-widest uppercase">Transaction Ledger</h2>
-                        </div>
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <button onclick="openAddModal()" class="btn-gold flex-1 sm:flex-none px-4 py-2 md:px-6 md:py-2.5 flex justify-center items-center gap-2 text-sm">
-                                <i class="fas fa-plus"></i> <span class="hidden sm:inline">Add Entry</span><span class="sm:hidden">Add</span>
-                            </button>
-                            <button onclick="exportToCSV()" class="btn-glass flex-1 sm:flex-none px-4 py-2 md:px-6 md:py-2.5 flex justify-center items-center gap-2 text-sm">
-                                <i class="fas fa-download"></i> <span class="hidden sm:inline">Export</span>
-                            </button>
+                <!-- Halving Card -->
+                <div class="glass-card p-5 relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-purple-500/10 rounded-full blur-[40px] pointer-events-none"></div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xs tracking-[0.15em] text-gray-400 uppercase flex items-center gap-2">
+                            <i class="fas fa-cube text-purple-400"></i> Next Halving
+                        </h3>
+                        <div class="bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[10px] px-2 py-1 rounded font-num">
+                            Blocks: <span id="blocksRemaining">...</span>
                         </div>
                     </div>
                     
-                    <div class="overflow-x-auto overflow-y-auto max-h-[500px] pr-2">
-                        <table class="w-full text-left border-collapse">
-                            <thead class="sticky top-0 bg-[#141414]/90 backdrop-blur-md z-20">
-                                <tr>
-                                    <th class="px-4 py-4 whitespace-nowrap rounded-tl-xl">Date</th>
-                                    <th class="hidden md:table-cell px-4">Price (<span class="table-currency-label">USD</span>)</th>
-                                    <th class="hidden md:table-cell px-4 text-right">Investment</th>
-                                    <th class="md:hidden px-4 py-4 whitespace-nowrap">Inv / Price</th>
-                                    <th class="hidden md:table-cell px-4 text-right text-gold-400">BTC Gained</th>
-                                    <th class="hidden md:table-cell px-4 text-right">PnL</th>
-                                    <th class="md:hidden px-4 py-4 text-right whitespace-nowrap">BTC / PnL</th>
-                                    <th class="px-4 py-4 text-center rounded-tr-xl">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody"></tbody>
-                        </table>
+                    <div id="halvingCountdownContainer" class="flex justify-center gap-3 md:gap-4 mb-4">
+                        <!-- Countdown injects here -->
+                        <p class="text-sm text-gray-500">Calculating time...</p>
+                    </div>
+
+                    <div class="w-full bg-black/50 rounded-full h-1.5 overflow-hidden">
+                        <div id="halvingProgressBar" class="bg-gradient-to-r from-purple-600 to-purple-400 h-full w-0 transition-all duration-1000"></div>
+                    </div>
+                    <div class="flex justify-between text-[9px] text-gray-500 mt-1.5 font-num">
+                        <span>Block <span id="currentBlockHeight">...</span></span>
+                        <span>Block <span id="nextHalvingBlockHeight">...</span></span>
+                    </div>
+                </div>
+
+                <!-- Goal Card -->
+                <div class="glass-card p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xs tracking-[0.15em] text-gray-400 uppercase flex items-center gap-2">
+                            <i class="fas fa-bullseye text-gold-400"></i> Accumulation Goal
+                        </h3>
+                        <button id="goalBtn" onclick="setGoal()" class="bg-gold-500/10 hover:bg-gold-500/20 border border-gold-500/30 text-gold-400 text-[10px] px-2 py-1 rounded transition-colors flex items-center gap-1">
+                            <i class="fas fa-sliders-h"></i> Adjust
+                        </button>
+                    </div>
+
+                    <div class="flex items-end justify-between mb-2">
+                        <p class="text-[10px] text-gray-400 uppercase">Progress</p>
+                        <p id="goalProgressText" class="font-num text-xs font-bold text-white"></p>
+                    </div>
+                    
+                    <div class="w-full bg-black/50 rounded-full h-2 overflow-hidden border border-white/5 relative">
+                        <div id="goalProgressBar" class="bg-gradient-to-r from-gold-600 to-gold-400 h-full w-0 transition-all duration-1000 relative">
+                            <!-- Shine effect -->
+                            <div class="absolute top-0 left-0 right-0 bottom-0 bg-white/20" style="animation: shine 2s infinite linear; width: 20px; filter: blur(2px);"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mt-5">
+                        <div>
+                            <p class="text-[9px] text-gray-500 tracking-[0.1em] uppercase mb-1">Total BTC</p>
+                            <p id="totalBTC" class="font-num font-bold text-lg text-white">0.000000</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] text-gray-500 tracking-[0.1em] uppercase mb-1">Avg Cost</p>
+                            <p id="avgCost" class="font-num font-bold text-lg text-gray-300">$0.00</p>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- CHART SECTION -->
+            <div class="glass-card p-4 md:p-6 w-full">
+                <h3 class="text-xs tracking-[0.15em] text-gray-400 uppercase mb-4 flex items-center gap-2">
+                    <i class="fas fa-chart-line text-blue-400"></i> Accumulation Growth
+                </h3>
+                <div class="w-full h-[200px] md:h-[250px] relative">
+                    <canvas id="portfolioChart"></canvas>
+                </div>
+            </div>
+
+            <!-- HISTORY TABLE -->
+            <div class="glass-card overflow-hidden flex flex-col mb-10">
+                <div class="p-4 md:p-5 flex items-center justify-between border-b border-white/10 bg-white/5">
+                    <h3 class="text-xs tracking-[0.15em] text-gray-400 uppercase flex items-center gap-2">
+                        <i class="fas fa-list-ul text-gray-300"></i> Transaction History
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="exportToCSV()" class="bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 px-3 py-1.5 rounded text-[10px] md:text-xs transition-colors font-bold">
+                            <i class="fas fa-download mr-1"></i> CSV
+                        </button>
+                        <button onclick="openAddModal()" class="bg-gradient-to-r from-gold-500 to-gold-600 text-dark px-3 py-1.5 rounded text-[10px] md:text-xs font-bold shadow-[0_0_10px_rgba(226,192,99,0.3)] hover:shadow-[0_0_15px_rgba(226,192,99,0.5)] transition-all">
+                            <i class="fas fa-plus mr-1"></i> Add Record
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-scroll overflow-y-auto max-h-[400px] w-full relative">
+                    <table class="w-full text-left font-num text-xs md:text-sm">
+                        <thead class="sticky top-0 bg-[#12161E] z-20 shadow-md">
+                            <tr>
+                                <th class="px-3 md:px-4 py-3 text-gray-400 font-normal text-[10px] md:text-xs uppercase tracking-wider">Date</th>
+                                <th class="hidden md:table-cell px-3 py-3 text-gray-400 font-normal text-xs uppercase tracking-wider">Buy Price (<span class="table-currency-label">USD</span>)</th>
+                                <th class="hidden md:table-cell px-3 py-3 text-gray-400 font-normal text-xs uppercase tracking-wider text-right">Invested</th>
+                                <th class="md:hidden px-3 py-3 text-gray-400 font-normal text-[10px] uppercase tracking-wider">Inv / Price</th>
+                                <th class="hidden md:table-cell px-3 py-3 text-gray-400 font-normal text-xs uppercase tracking-wider text-right">Amount BTC</th>
+                                <th class="hidden md:table-cell px-3 py-3 text-gray-400 font-normal text-xs uppercase tracking-wider text-right">PnL</th>
+                                <th class="md:hidden px-3 py-3 text-gray-400 font-normal text-[10px] uppercase tracking-wider text-right">BTC / PnL</th>
+                                <th class="px-3 py-3 text-center text-gray-400 font-normal text-[10px] md:text-xs uppercase tracking-wider w-16">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-white/5">
+                            <!-- Data injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </main>
         
-        <!-- FAB for Mobile -->
-        <button onclick="openAddModal()" class="md:hidden fixed bottom-6 right-6 w-14 h-14 btn-gold rounded-full flex items-center justify-center text-xl z-40 shadow-[0_4px_20px_rgba(212,175,55,0.4)]">
+        <!-- Floating Add Button (Mobile Friendly) -->
+        <button onclick="openAddModal()" class="fixed bottom-6 right-6 md:hidden w-14 h-14 rounded-full bg-gradient-to-r from-gold-400 to-gold-600 text-dark flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(226,192,99,0.4)] z-40 active:scale-95 transition-transform">
             <i class="fas fa-plus"></i>
         </button>
 
     </div>
 
-    <!-- Add/Edit Transaction Modal (Glassmorphism) -->
-    <div id="addTransactionModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity">
-        <div class="glass-panel p-6 md:p-10 w-full max-w-lg relative bg-[#141414]/90 max-h-[90vh] overflow-y-auto border border-gold-500/20 shadow-[0_0_40px_rgba(212,175,55,0.1)]">
+    <!-- ADD/EDIT MODAL -->
+    <div id="addTransactionModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="glass-card p-6 md:p-8 w-full max-w-md relative transform scale-95 transition-transform duration-300 bg-[#12161E]" id="modalContent">
             
-            <button onclick="closeAddModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white bg-white/5 rounded-full hover:bg-white/10 transition-colors">
+            <button onclick="closeAddModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-colors">
                 <i class="fas fa-times"></i>
             </button>
 
-            <div class="flex items-center gap-3 mb-8 pr-8">
-                <div class="w-10 h-10 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-500 border border-gold-500/30">
-                    <i id="formIcon" class="fas fa-plus text-lg"></i>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 rounded-full bg-gold-500/20 text-gold-400 flex items-center justify-center">
+                    <i id="formIcon" class="fas fa-plus"></i>
                 </div>
-                <h2 id="formTitle" class="text-xl font-light tracking-widest uppercase">New Acquisition</h2>
+                <h2 id="formTitle" class="text-xl font-bold tracking-wide">Add Transaction</h2>
             </div>
             
             <form id="transactionForm" class="space-y-5">
                 <div>
-                    <label for="date" class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Transaction Date</label>
-                    <input type="date" id="date" class="premium-input w-full" required>
+                    <label class="block text-xs text-gray-400 tracking-wider uppercase mb-1.5">Date</label>
+                    <input type="date" id="date" class="w-full premium-input rounded-lg px-4 py-2.5 font-num" required>
                 </div>
                 <div>
-                    <div class="flex justify-between items-end mb-2">
-                        <label for="price" class="block text-xs uppercase tracking-widest text-gray-400">Buying Price (<span class="price-currency-label">USD</span>)</label>
-                        <button type="button" onclick="fillLivePrice()" class="text-[10px] uppercase tracking-wider bg-gold-500/20 text-gold-400 border border-gold-500/30 rounded px-2 py-1 hover:bg-gold-500/30 transition-colors flex items-center gap-1">
-                            <i class="fas fa-bolt"></i> Live Rate
+                    <div class="flex justify-between items-end mb-1.5">
+                        <label class="block text-xs text-gray-400 tracking-wider uppercase">Buy Price (<span class="price-currency-label text-gold-400">USD</span>)</label>
+                        <button type="button" onclick="fillLivePrice()" class="text-[10px] text-gold-400 bg-gold-500/10 border border-gold-500/20 rounded px-2 py-1 flex items-center gap-1 hover:bg-gold-500/20 transition-colors">
+                            <i class="fas fa-bolt"></i> Live Price
                         </button>
                     </div>
-                    <input type="text" inputmode="decimal" id="price" placeholder="Price per 1 BTC" class="premium-input w-full" required>
+                    <input type="text" inputmode="decimal" id="price" placeholder="0.00" class="w-full premium-input rounded-lg px-4 py-2.5 font-num text-lg" required>
                 </div>
                 <div>
-                    <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Investment Amount</label>
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="text" inputmode="decimal" id="amount" placeholder="0.00" class="premium-input w-full" required>
-                        <div id="amountCurrencyToggle" class="flex flex-shrink-0 sm:w-32 bg-black/40 rounded-xl border border-white/10 overflow-hidden p-1">
-                            <button type="button" data-currency="USD" class="flex-1 py-2 text-xs font-semibold rounded-lg transition-colors bg-white/10 text-white shadow-sm">USD</button>
-                            <button type="button" data-currency="THB" class="flex-1 py-2 text-xs font-semibold rounded-lg text-gray-500 hover:text-white transition-colors">THB</button>
+                    <label class="block text-xs text-gray-400 tracking-wider uppercase mb-1.5">Invested Amount</label>
+                    <div class="flex gap-2">
+                        <input type="text" inputmode="decimal" id="amount" placeholder="0.00" class="w-full premium-input rounded-lg px-4 py-2.5 font-num text-lg" required>
+                        <div id="amountCurrencyToggle" class="flex bg-black/40 rounded-lg p-1 border border-white/10 shrink-0 font-num text-sm">
+                            <button type="button" data-currency="USD" class="px-4 py-1.5 rounded-md text-gray-400 transition-colors active-currency">USD</button>
+                            <button type="button" data-currency="THB" class="px-4 py-1.5 rounded-md text-gray-400 transition-colors">THB</button>
                         </div>
                     </div>
                 </div>
-                <div class="flex flex-col gap-3 mt-8 pt-4 border-t border-white/10">
-                    <button type="submit" id="submitBtn" class="btn-gold w-full py-3 md:py-4 flex items-center justify-center text-sm uppercase tracking-widest">
-                        <span id="submitBtnText">Confirm Execute</span>
-                        <div id="submitSpinner" class="hidden w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin ml-2"></div>
-                    </button>
-                    <button type="button" onclick="closeAddModal()" class="btn-glass w-full py-3 flex items-center justify-center text-sm uppercase tracking-widest">
-                        Cancel
+                <div class="pt-4">
+                    <button type="submit" id="submitBtn" class="w-full bg-gradient-to-r from-gold-500 to-gold-600 text-dark font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:shadow-[0_0_15px_rgba(226,192,99,0.3)] transition-all">
+                        <span id="submitBtnText">Save Record</span>
+                        <div id="submitSpinner" class="hidden w-5 h-5 border-2 border-dark border-t-transparent rounded-full animate-spin"></div>
                     </button>
                 </div>
             </form>
@@ -461,9 +408,10 @@
     </div>
 
 <script>
-// ---------- STREAMING_CHUNK:Initializing state and configuration... ----------
+// ---------- CONFIGURATION ----------
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwU6yZFJPf_TfkLl47OSJp-LqEeXpBGXzdrquyfmmCBRwovJ8rcsoQDwzNUk5RrtK0C/exec'; 
 
+// ---------- STATE MANAGEMENT ----------
 let transactions = [];
 let btcPriceData = { price: 0, change: 0 };
 let thbRate = 36.0; 
@@ -474,6 +422,7 @@ let editingRow = null;
 let btcGoal = 1.0; 
 let lineChart = null; 
 let isPrivacyMode = localStorage.getItem('isPrivacyMode') === 'true'; 
+let fearGreedIndex = null;
 
 let halvingEstimatedDate = null;
 let countdownInterval = null;
@@ -482,58 +431,48 @@ const loadingEl = document.getElementById('loading');
 const mainContentEl = document.getElementById('mainContent');
 const form = document.getElementById('transactionForm');
 const historyTableBody = document.getElementById('historyTableBody');
-const submitBtn = document.getElementById('submitBtn');
-const submitBtnText = document.getElementById('submitBtnText');
-const submitSpinner = document.getElementById('submitSpinner');
+const modalEl = document.getElementById('addTransactionModal');
+const modalContent = document.getElementById('modalContent');
 const priceInput = document.getElementById('price');
 const amountInput = document.getElementById('amount');
-const modalEl = document.getElementById('addTransactionModal');
-const vipCard = document.getElementById('vipCard');
 
-// SweetAlert Customization
-const Toast = Swal.mixin({
-    toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
-    timerProgressBar: true, background: 'rgba(20,20,20,0.95)', color: '#fff',
-    customClass: { popup: 'border border-gold-500/20 rounded-xl backdrop-blur-md' }
-});
-
-function showPremiumAlert(title, text, icon) {
-    Swal.fire({
-        title, text, icon,
-        background: 'rgba(20,20,20,0.95)',
-        customClass: { popup: 'premium-swal', confirmButton: 'premium-swal-confirm', cancelButton: 'premium-swal-cancel', input: 'premium-swal-input' }
-    });
-}
-
-// ---------- STREAMING_CHUNK:Implementing VIP Card 3D Tilt Effect... ----------
-vipCard.addEventListener('mousemove', (e) => {
-    const rect = vipCard.getBoundingClientRect();
+// --- Tilt Effect Logic ---
+const tiltCard = document.getElementById('wealthCard');
+tiltCard.addEventListener('mousemove', (e) => {
+    // Only apply on desktop
+    if (window.innerWidth < 768) return; 
+    const rect = tiltCard.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    
-    // Calculate rotation (-5 to 5 degrees)
-    const rotateX = ((y - centerY) / centerY) * -5;
-    const rotateY = ((x - centerX) / centerX) * 5;
-    
-    vipCard.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    const rotateX = ((y - centerY) / centerY) * -6; // Max 6 deg
+    const rotateY = ((x - centerX) / centerX) * 6;
+    tiltCard.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+});
+tiltCard.addEventListener('mouseleave', () => {
+    tiltCard.style.transform = `rotateX(0deg) rotateY(0deg)`;
 });
 
-vipCard.addEventListener('mouseleave', () => {
-    vipCard.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+const Toast = Swal.mixin({
+    toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
+    timerProgressBar: true, background: '#161B22', color: '#fff',
+    customClass: { popup: 'border border-white/10 rounded-xl' }
 });
 
-// ---------- STREAMING_CHUNK:Implementing UI actions (Modals, Toggles)... ----------
 function openAddModal() {
     modalEl.classList.remove('hidden');
     modalEl.classList.add('flex');
-    setTimeout(() => modalEl.style.opacity = '1', 10);
+    // small delay for animation
+    setTimeout(() => {
+        modalEl.classList.remove('opacity-0');
+        modalContent.classList.remove('scale-95');
+    }, 10);
 }
 
 function closeAddModal() {
-    modalEl.style.opacity = '0';
+    modalEl.classList.add('opacity-0');
+    modalContent.classList.add('scale-95');
     setTimeout(() => {
         modalEl.classList.add('hidden');
         modalEl.classList.remove('flex');
@@ -541,33 +480,11 @@ function closeAddModal() {
     }, 300);
 }
 
-modalEl.addEventListener('click', (e) => { if (e.target === modalEl) closeAddModal(); });
+modalEl.addEventListener('click', (e) => {
+    if (e.target === modalEl) closeAddModal();
+});
 
-function fillLivePrice() {
-    if (!btcPriceData || btcPriceData.price === 0) {
-        Toast.fire({ icon: 'warning', title: 'Awaiting market data...' }); return;
-    }
-    let currentLivePrice = btcPriceData.price;
-    if (amountInputCurrency === 'THB') currentLivePrice *= thbRate;
-    
-    priceInput.value = formatInp(currentLivePrice.toFixed(2));
-    priceInput.style.borderColor = '#D4AF37';
-    setTimeout(() => priceInput.style.borderColor = '', 500);
-}
-
-function togglePrivacy() {
-    isPrivacyMode = !isPrivacyMode;
-    localStorage.setItem('isPrivacyMode', isPrivacyMode);
-    updatePrivacyIcon();
-    if (isDataLoaded) fullRender();
-}
-
-function updatePrivacyIcon() {
-    const icon = document.getElementById('privacyToggleIcon');
-    icon.className = isPrivacyMode ? 'fas fa-eye-slash text-gray-600' : 'fas fa-eye text-gold-500';
-}
-
-// ---------- STREAMING_CHUNK:Fetching Core APIs (Rates, BTC, Fear & Greed)... ----------
+// --- API Fetches ---
 async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
     for (let i = 0; i < retries; i++) {
         try {
@@ -583,60 +500,61 @@ async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
 
 async function fetchAPIs() {
     try {
-        const exchangeRatePromise = fetchWithRetry('https://api.exchangerate-api.com/v4/latest/USD')
-            .then(data => { if (data?.rates?.THB) thbRate = data.rates.THB; })
-            .catch(() => console.log("Using fallback THB rate"));
+        const p1 = fetchWithRetry('https://api.exchangerate-api.com/v4/latest/USD')
+            .then(data => { if (data?.rates?.THB) thbRate = data.rates.THB; }).catch(()=>{});
 
-        const btcPricePromise = fetchWithRetry('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true')
-            .then(data => { if (data?.bitcoin) btcPriceData = { price: data.bitcoin.usd, change: data.bitcoin.usd_24h_change }; })
-            .catch(() => console.log("Using fallback BTC price"));
-
-        // NEW: Fear and Greed Index
-        const fngPromise = fetchWithRetry('https://api.alternative.me/fng/?limit=1')
-            .then(data => {
-                if (data?.data && data.data.length > 0) {
-                    const fng = data.data[0];
-                    renderFNG(fng.value, fng.value_classification);
+        const p2 = fetchWithRetry('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true')
+            .then(data => { if (data?.bitcoin) btcPriceData = { price: data.bitcoin.usd, change: data.bitcoin.usd_24h_change }; }).catch(()=>{});
+            
+        const p3 = fetchWithRetry('https://api.alternative.me/fng/?limit=1')
+            .then(data => { 
+                if (data?.data && data.data[0]) {
+                    fearGreedIndex = data.data[0];
+                    renderFearGreed();
                 }
-            }).catch(() => console.log("Failed to fetch F&G"));
+            }).catch(()=>{});
 
-        await Promise.allSettled([exchangeRatePromise, btcPricePromise, fngPromise]);
-    } catch (e) { console.error("API Error:", e); }
+        await Promise.allSettled([p1, p2, p3]);
+    } catch (e) {}
 }
 
-function renderFNG(value, classification) {
-    document.getElementById('fngIndex').classList.remove('hidden');
-    const dot = document.getElementById('fngDot');
-    const text = document.getElementById('fngText');
+function renderFearGreed() {
+    if(!fearGreedIndex) return;
+    const val = parseInt(fearGreedIndex.value);
+    const text = fearGreedIndex.value_classification;
+    const vEl = document.getElementById('fgValue');
+    const tEl = document.getElementById('fgText');
+    const widget = document.getElementById('fgWidget');
     
-    text.textContent = `${value} - ${classification}`;
-    let colorClass = 'text-gray-500';
-    let bgClass = 'bg-gray-500';
-
-    if (value <= 25) { colorClass = 'text-red-500'; bgClass = 'bg-red-500'; } // Extreme Fear
-    else if (value <= 45) { colorClass = 'text-orange-400'; bgClass = 'bg-orange-400'; } // Fear
-    else if (value <= 55) { colorClass = 'text-yellow-400'; bgClass = 'bg-yellow-400'; } // Neutral
-    else if (value <= 75) { colorClass = 'text-green-400'; bgClass = 'bg-green-400'; } // Greed
-    else { colorClass = 'text-green-500'; bgClass = 'bg-green-500'; } // Extreme Greed
-
-    dot.className = `w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${bgClass}`;
-    text.className = `text-sm font-num font-semibold ${colorClass}`;
+    vEl.textContent = val;
+    tEl.textContent = text;
+    
+    // Clear old colors
+    widget.classList.remove('text-success', 'text-danger', 'text-gold-400');
+    
+    if (val >= 60) {
+        widget.classList.add('text-success'); // Greed
+    } else if (val <= 40) {
+        widget.classList.add('text-danger'); // Fear
+    } else {
+        widget.classList.add('text-gold-400'); // Neutral
+    }
 }
 
-// ---------- STREAMING_CHUNK:Halving Logic... ----------
+// --- Halving API ---
 async function fetchBlockHeight() {
     const endpoints = [
-        async () => { const res = await fetch('https://blockchain.info/q/getblockcount'); if (!res.ok) throw new Error('API 1 Failed'); return parseInt(await res.text()); },
-        async () => { const res = await fetch('https://mempool.space/api/blocks/tip/height'); if (!res.ok) throw new Error('API 2 Failed'); return parseInt(await res.text()); }
+        async () => { const res = await fetch('https://blockchain.info/q/getblockcount'); if(!res.ok) throw new Error(); return parseInt(await res.text()); },
+        async () => { const res = await fetch('https://mempool.space/api/blocks/tip/height'); if(!res.ok) throw new Error(); return parseInt(await res.text()); }
     ];
-
     for (const fetcher of endpoints) {
         try {
             const currentBlock = await fetcher();
-            if (currentBlock && !isNaN(currentBlock)) { updateHalvingData(currentBlock); return; }
-        } catch (e) { console.warn("Switching block API..."); }
+            if (currentBlock && !isNaN(currentBlock)) {
+                updateHalvingData(currentBlock); return;
+            }
+        } catch (e) {}
     }
-    document.getElementById('currentBlockHeight').textContent = "Connection Error";
 }
 
 function updateHalvingData(currentBlock) {
@@ -651,9 +569,9 @@ function updateHalvingData(currentBlock) {
     const blocksInCurrentEpoch = currentBlock % HALVING_INTERVAL;
     const progressPercent = (blocksInCurrentEpoch / HALVING_INTERVAL) * 100;
 
-    document.getElementById('currentBlockHeight').textContent = `Block ${new Intl.NumberFormat('en-US').format(currentBlock)}`;
-    document.getElementById('nextHalvingBlockHeight').textContent = `Block ${new Intl.NumberFormat('en-US').format(nextHalvingBlock)}`;
-    document.getElementById('blocksRemaining').textContent = new Intl.NumberFormat('en-US').format(blocksLeft);
+    document.getElementById('currentBlockHeight').textContent = currentBlock.toLocaleString();
+    document.getElementById('nextHalvingBlockHeight').textContent = nextHalvingBlock.toLocaleString();
+    document.getElementById('blocksRemaining').textContent = blocksLeft.toLocaleString();
     document.getElementById('halvingProgressBar').style.width = `${progressPercent}%`;
 
     if (!countdownInterval) countdownInterval = setInterval(updateHalvingCountdown, 1000);
@@ -662,40 +580,34 @@ function updateHalvingData(currentBlock) {
 
 function updateHalvingCountdown() {
     if (!halvingEstimatedDate) return;
-    const now = new Date(); const diff = halvingEstimatedDate - now;
+    const now = new Date();
+    const diff = halvingEstimatedDate - now;
     const container = document.getElementById('halvingCountdownContainer');
 
-    if (diff <= 0) { container.innerHTML = `<p class="font-bold text-gold-400">Epoch Reached</p>`; return; }
+    if (diff <= 0) { container.innerHTML = `<p class="font-bold text-gold-400">Halving is Here!</p>`; return; }
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const mins = Math.floor((diff / 1000 / 60) % 60);
-    const secs = Math.floor((diff / 1000) % 60);
-
-    const format = (n) => n.toString().padStart(2, '0');
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+    const mins = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+    const secs = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
 
     container.innerHTML = `
-        <div class="flex flex-col items-center"><span class="text-xl md:text-2xl text-white font-bold">${format(days)}</span><span class="text-[9px] text-gray-500 uppercase">Days</span></div><span class="text-gray-600 mt-1">:</span>
-        <div class="flex flex-col items-center"><span class="text-xl md:text-2xl text-white font-bold">${format(hours)}</span><span class="text-[9px] text-gray-500 uppercase">Hrs</span></div><span class="text-gray-600 mt-1">:</span>
-        <div class="flex flex-col items-center"><span class="text-xl md:text-2xl text-white font-bold">${format(mins)}</span><span class="text-[9px] text-gray-500 uppercase">Min</span></div><span class="text-purple-500 mt-1">:</span>
-        <div class="flex flex-col items-center"><span class="text-xl md:text-2xl text-purple-400 font-bold">${format(secs)}</span><span class="text-[9px] text-purple-500/70 uppercase">Sec</span></div>
+        <div class="flex flex-col items-center"><span class="text-xl md:text-2xl font-num font-bold text-white">${days}</span><span class="text-[9px] text-gray-500 uppercase">Days</span></div>
+        <span class="text-xl md:text-2xl font-bold text-gray-600">:</span>
+        <div class="flex flex-col items-center"><span class="text-xl md:text-2xl font-num font-bold text-white">${hours}</span><span class="text-[9px] text-gray-500 uppercase">Hrs</span></div>
+        <span class="text-xl md:text-2xl font-bold text-gray-600">:</span>
+        <div class="flex flex-col items-center"><span class="text-xl md:text-2xl font-num font-bold text-white">${mins}</span><span class="text-[9px] text-gray-500 uppercase">Min</span></div>
+        <span class="text-xl md:text-2xl font-bold text-purple-500/50">:</span>
+        <div class="flex flex-col items-center"><span class="text-xl md:text-2xl font-num font-bold text-purple-400">${secs}</span><span class="text-[9px] text-purple-500/70 uppercase">Sec</span></div>
     `;
 }
 
-// ---------- STREAMING_CHUNK:Data Fetching & Calculation... ----------
-async function refreshBTCPrice() {
-    const btn = document.getElementById('refreshPriceBtn');
-    btn.querySelector('i').classList.add('animate-spin'); btn.disabled = true;
-    try {
-        await fetchAPIs();
-        if (isDataLoaded) { renderSummary(); renderBadges(); renderHistory(); }
-        Toast.fire({ icon: 'success', title: 'Market data synced' });
-    } catch (e) { Toast.fire({ icon: 'error', title: 'Sync failed' }); } 
-    finally { btn.querySelector('i').classList.remove('animate-spin'); btn.disabled = false; }
-}
-
+// --- Data & Render Logic ---
 async function fetchTransactions() {
-    if (!SCRIPT_URL.startsWith('https')) { showPremiumAlert('Setup Required', 'Please configure Google Apps Script URL', 'warning'); return false; }
+    if (!SCRIPT_URL.startsWith('https')) { 
+        Swal.fire({title: 'Setup Required', text: 'Please set Google Apps Script URL', icon: 'warning', customClass: {popup: 'dark-swal', confirmButton: 'dark-swal-confirm'}}); 
+        return false; 
+    }
     try {
         const data = await fetchWithRetry(SCRIPT_URL);
         if (Array.isArray(data)) { transactions = data.sort((a, b) => new Date(b.date) - new Date(a.date)); } 
@@ -704,7 +616,7 @@ async function fetchTransactions() {
             btcGoal = data.btcGoal || 1.0; 
         }
         return true;
-    } catch (error) { console.error("Fetch Error:", error); return false; }
+    } catch (error) { return false; }
 }
 
 function calculateSummary() {
@@ -718,32 +630,61 @@ function calculateSummary() {
     return { avgCost, portfolioValue, totalBTC, unrealizedProfit, unrealizedProfitPercent, totalInvested: totalUSD };
 }
 
-// ---------- STREAMING_CHUNK:Goals and Badges System... ----------
-async function setGoal() {
-    const { value: newGoal } = await Swal.fire({
-        title: 'Set Target BTC', input: 'text', 
-        inputAttributes: { inputmode: 'decimal', placeholder: 'e.g. 1.0' },
-        inputValue: btcGoal, showCancelButton: true, confirmButtonText: 'Save', cancelButtonText: 'Cancel',
-        inputValidator: (value) => {
-            const parsed = parseFloat(value.replace(/,/g, ''));
-            if (!value || isNaN(parsed) || parsed <= 0) return 'Enter a valid number greater than 0';
-        },
-        background: 'rgba(20,20,20,0.95)',
-        customClass: { popup: 'premium-swal', confirmButton: 'premium-swal-confirm', cancelButton: 'premium-swal-cancel', input: 'premium-swal-input' }
-    });
-    
-    if (newGoal) {
-        const parsedGoal = parseFloat(newGoal.replace(/,/g, ''));
-        const btn = document.getElementById('goalBtn');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
-        try {
-            const res = await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'setGoal', goal: parsedGoal }) });
-            if (res.status === 'success') { btcGoal = parsedGoal; renderGoal(); Toast.fire({ icon: 'success', title: 'Goal updated' }); } 
-        } catch (e) { showPremiumAlert('Error', 'Update failed', 'error'); }
-        finally { btn.innerHTML = '<i class="fas fa-sliders-h mr-1"></i> Adjust'; btn.disabled = false; }
-    }
+// Number animation function
+function animateValue(obj, start, end, duration, formatFn) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        // easeOutQuart
+        const ease = 1 - Math.pow(1 - progress, 4);
+        const current = start + (end - start) * ease;
+        obj.innerHTML = formatFn(current);
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            obj.innerHTML = formatFn(end);
+        }
+    };
+    window.requestAnimationFrame(step);
 }
 
+function formatCurrency(v, cur = displayCurrency) {
+    const opt = { style: 'currency', currency: cur, minimumFractionDigits: 2, maximumFractionDigits: 2 };
+    return cur === 'THB' ? (v * thbRate).toLocaleString('th-TH', opt) : v.toLocaleString('en-US', opt);
+}
+
+function renderSummary() {
+    const s = calculateSummary();
+    const pvEl = document.getElementById('portfolioValue');
+    
+    document.getElementById('currentPriceText').textContent = formatCurrency(btcPriceData.price, 'USD');
+    document.getElementById('avgCost').textContent = isPrivacyMode ? '***' : formatCurrency(s.avgCost);
+    document.getElementById('totalBTC').textContent = isPrivacyMode ? '***' : s.totalBTC.toFixed(6) + ' BTC';
+    
+    if (isPrivacyMode) {
+        pvEl.textContent = '***';
+    } else {
+        // Only animate if value changed significantly to avoid glitchy re-renders
+        const currentVal = parseFloat(pvEl.dataset.val || 0);
+        if(Math.abs(currentVal - s.portfolioValue) > 0.01) {
+            animateValue(pvEl, currentVal, s.portfolioValue, 1000, (v) => formatCurrency(v));
+            pvEl.dataset.val = s.portfolioValue;
+        } else {
+            pvEl.textContent = formatCurrency(s.portfolioValue);
+        }
+    }
+    
+    const pEl = document.getElementById('unrealizedProfit');
+    const ppEl = document.getElementById('unrealizedProfitPercent');
+    
+    pEl.textContent = isPrivacyMode ? '***' : `${s.unrealizedProfit >= 0 ? '+' : ''}${formatCurrency(s.unrealizedProfit)}`;
+    ppEl.textContent = `${s.unrealizedProfit >= 0 ? '+' : ''}${s.unrealizedProfitPercent.toFixed(2)}%`;
+    pEl.className = `font-num font-bold text-lg md:text-xl ${s.unrealizedProfit >= 0 ? 'text-success' : 'text-danger'}`;
+    ppEl.className = `${s.unrealizedProfit >= 0 ? 'bg-success/10 border-success/30 text-success' : 'bg-danger/10 border-danger/30 text-danger'} font-num text-xs md:text-sm font-bold px-2.5 py-1 rounded-md border backdrop-blur-sm inline-block`;
+}
+
+// --- Goal & Badges ---
 function renderGoal() {
     const s = calculateSummary();
     const percent = btcGoal > 0 ? (s.totalBTC / btcGoal) * 100 : 0;
@@ -760,51 +701,20 @@ const badgesConfig = [
     { id: 'octopus', icon: '🐙', name: 'Octopus', condition: (s) => s.totalBTC >= 0.05 },
     { id: 'crab', icon: '🦀', name: 'Crab', condition: (s) => s.totalBTC >= 0.01 },
     { id: 'shrimp', icon: '🦐', name: 'Shrimp', condition: (s) => s.totalBTC >= 0.001 },
-    { id: 'plankton', icon: '🦠', name: 'Plankton', condition: (s) => s.totalBTC < 0.001 },
-    { id: 'egg', icon: '🥚', name: 'Starter', condition: (s) => true } 
+    { id: 'plankton', icon: '🦠', name: 'Plankton', condition: (s) => s.totalBTC < 0.001 && s.totalBTC > 0 },
+    { id: 'egg', icon: '🥚', name: 'Newbie', condition: (s) => true } 
 ];
 
 function renderBadges() {
     const s = calculateSummary();
-    const currentBadge = badgesConfig.find(b => b.condition(s));
-    
-    if (currentBadge) {
-        document.getElementById('badgeIcon').textContent = isPrivacyMode ? '🔒' : currentBadge.icon;
-        document.getElementById('badgeName').textContent = isPrivacyMode ? 'VIP Tier Hidden' : currentBadge.name;
+    const b = badgesConfig.find(x => x.condition(s));
+    if (b) {
+        document.getElementById('badgeIcon').textContent = isPrivacyMode ? '🔒' : b.icon;
+        document.getElementById('badgeName').textContent = isPrivacyMode ? '***' : b.name;
     }
 }
 
-// ---------- STREAMING_CHUNK:Rendering DOM Elements (Summary, Table, Chart)... ----------
-function formatCurrency(v, cur = displayCurrency) {
-    const opt = { style: 'currency', currency: cur, minimumFractionDigits: 2, maximumFractionDigits: 2 };
-    return cur === 'THB' ? (v * thbRate).toLocaleString('en-US', opt) : v.toLocaleString('en-US', opt);
-}
-
-function renderSummary() {
-    const s = calculateSummary();
-    
-    document.getElementById('currentPriceText').textContent = formatCurrency(btcPriceData.price, 'USD');
-    document.getElementById('avgCost').textContent = isPrivacyMode ? '***' : formatCurrency(s.avgCost);
-    document.getElementById('portfolioValue').textContent = isPrivacyMode ? '***' : formatCurrency(s.portfolioValue);
-    document.getElementById('totalBTC').textContent = isPrivacyMode ? '***' : s.totalBTC.toFixed(6) + ' BTC';
-    document.getElementById('totalInvested').textContent = isPrivacyMode ? '***' : formatCurrency(s.totalInvested);
-    
-    const pEl = document.getElementById('unrealizedProfit');
-    const ppEl = document.getElementById('unrealizedProfitPercent');
-    
-    pEl.textContent = isPrivacyMode ? '***' : formatCurrency(s.unrealizedProfit);
-    ppEl.textContent = `${s.unrealizedProfit >= 0 ? '+' : ''}${s.unrealizedProfitPercent.toFixed(2)}%`;
-    
-    // Dynamic Glow based on PnL
-    if (s.unrealizedProfit >= 0) {
-        pEl.className = 'font-num font-semibold text-xl md:text-3xl text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]';
-        ppEl.className = 'font-num font-medium text-sm md:text-lg px-3 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400';
-    } else {
-        pEl.className = 'font-num font-semibold text-xl md:text-3xl text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]';
-        ppEl.className = 'font-num font-medium text-sm md:text-lg px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400';
-    }
-}
-
+// --- Chart ---
 function renderChart() {
     const ctx = document.getElementById('portfolioChart').getContext('2d');
     if (lineChart) lineChart.destroy();
@@ -813,53 +723,54 @@ function renderChart() {
     let acc = 0; const labels = [], data = [];
     sorted.forEach(t => { acc += parseFloat(t.amountBTC); labels.push(new Date(t.date).toLocaleDateString('en-US', {month:'short',year:'2-digit'})); data.push(acc); });
     
-    // Create Gold Gradient for chart
-    let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, 'rgba(212, 175, 55, 0.4)');
-    gradient.addColorStop(1, 'rgba(212, 175, 55, 0)');
+    // Create gradient
+    let gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(226, 192, 99, 0.4)');
+    gradient.addColorStop(1, 'rgba(226, 192, 99, 0.0)');
 
     lineChart = new Chart(ctx, {
         type: 'line', 
-        data: { labels, datasets: [{ label: 'BTC Accumulated', data, borderColor: '#D4AF37', backgroundColor: gradient, borderWidth: 2, pointBackgroundColor: '#0a0a0a', pointBorderColor: '#D4AF37', pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6, fill: true, tension: 0.4 }] },
+        data: { labels, datasets: [{ label: 'Total BTC', data, borderColor: '#E2C063', backgroundColor: gradient, borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 6 }] },
         options: { 
             responsive: true, maintainAspectRatio: false, 
-            plugins: { 
-                legend: { display: false },
-                tooltip: { backgroundColor: 'rgba(20,20,20,0.9)', titleColor: '#D4AF37', bodyColor: '#fff', borderColor: 'rgba(212,175,55,0.3)', borderWidth: 1, padding: 10, displayColors: false, callbacks: { label: function(c) { return isPrivacyMode ? `Total: *** BTC` : `${c.parsed.y.toFixed(4)} BTC`; } } }
-            },
-            scales: { x: { grid: { display: false, drawBorder: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { family: 'Outfit' } } }, y: { border: { display: false }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.4)', font: { family: 'Outfit' }, callback: function(v) { return isPrivacyMode ? '***' : v; } } } }
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: '#161B22', borderColor: '#E2C063', borderWidth: 1, titleColor: '#fff', bodyColor: '#F5D061', callbacks: { label: function(c) { return isPrivacyMode ? `*** BTC` : `${c.parsed.y.toFixed(4)} BTC`; } } } },
+            scales: { 
+                x: { grid: { display: false }, ticks: { color: '#6b7280', font: { family: 'Inter', size: 10 } } }, 
+                y: { border: { dash: [4, 4] }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#6b7280', font: { family: 'Inter', size: 10 }, callback: function(v) { return isPrivacyMode ? '***' : v; } } } 
+            }
         }
     });
 }
 
+// --- Table ---
 function renderHistory() {
     historyTableBody.innerHTML = '';
-    if (transactions.length === 0) { historyTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-12 text-gray-500 font-light tracking-widest uppercase">No Records Found</td></tr>'; return; }
+    if (transactions.length === 0) { historyTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-500 font-num text-xs uppercase tracking-wider">No Transactions Found</td></tr>'; return; }
     
     transactions.forEach(t => {
         const pr = parseFloat(t.price), inv = parseFloat(t.amountUSD), btc = parseFloat(t.amountBTC);
         const diff = (btc * btcPriceData.price) - inv, per = inv > 0 ? (diff / inv) * 100 : 0;
-        const isP = diff >= 0, color = isP ? 'text-green-400' : 'text-red-400';
+        const isP = diff >= 0, color = isP ? 'text-success' : 'text-danger';
         
-        const maskedInv = isPrivacyMode ? '***' : formatCurrency(inv);
-        const maskedBtc = isPrivacyMode ? '***' : btc.toFixed(6);
-        const maskedDiff = isPrivacyMode ? '***' : `${isP ? '+' : ''}${formatCurrency(diff)}`;
-        const maskedPer = `${isP ? '↗' : '↘'} ${Math.abs(per).toFixed(2)}%`;
+        const mInv = isPrivacyMode ? '***' : formatCurrency(inv);
+        const mBtc = isPrivacyMode ? '***' : btc.toFixed(6);
+        const mDiff = isPrivacyMode ? '***' : `${isP ? '+' : ''}${formatCurrency(diff)}`;
+        const mPer = `${isP ? '↗' : '↘'} ${Math.abs(per).toFixed(2)}%`;
         
         const row = document.createElement('tr');
-        row.className = "group transition-colors";
+        row.className = "hover:bg-white/5 transition-colors group";
         row.innerHTML = `
-            <td class="px-4 py-4 text-sm text-gray-300 whitespace-nowrap align-middle">${new Date(t.date).toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'2-digit'})}</td>
-            <td class="hidden md:table-cell px-4 py-4 align-middle text-gray-400">${formatCurrency(pr, 'USD')}</td>
-            <td class="hidden md:table-cell px-4 py-4 font-medium text-right align-middle text-white">${maskedInv}</td>
-            <td class="md:hidden px-4 py-4 align-middle"><div class="font-medium text-white">${maskedInv}</div><div class="text-xs text-gray-500 mt-1">@${formatCurrency(pr, 'USD')}</div></td>
-            <td class="hidden md:table-cell px-4 py-4 font-semibold text-gold-400 text-right align-middle">${maskedBtc}</td>
-            <td class="hidden md:table-cell px-4 py-4 text-right align-middle"><div class="flex flex-col items-end"><span class="font-medium ${color}">${maskedDiff}</span><span class="text-[10px] uppercase tracking-wider ${color} opacity-80 mt-1">${maskedPer}</span></div></td>
-            <td class="md:hidden px-4 py-4 text-right align-middle"><div class="font-semibold text-gold-400">${maskedBtc}</div><div class="flex flex-col items-end mt-1"><span class="${color} text-sm">${maskedDiff}</span></div></td>
-            <td class="px-4 py-4 text-center align-middle">
-                <div class="flex justify-center items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                    <button class="w-8 h-8 rounded-full bg-white/5 hover:bg-gold-500/20 text-gray-400 hover:text-gold-400 transition-colors flex items-center justify-center text-xs" onclick="editTransaction(${t.rowNumber})" title="Edit"><i class="fas fa-pen"></i></button>
-                    <button class="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors flex items-center justify-center text-xs" onclick="deleteTransaction(${t.rowNumber})" title="Delete"><i class="fas fa-trash"></i></button>
+            <td class="px-3 md:px-4 py-3 whitespace-nowrap text-[10px] md:text-xs text-gray-300 align-top md:align-middle">${new Date(t.date).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'2-digit'})}</td>
+            <td class="hidden md:table-cell px-3 py-3 align-middle text-gray-300 text-xs">${formatCurrency(pr, 'USD')}</td>
+            <td class="hidden md:table-cell px-3 py-3 text-right align-middle text-gray-200 text-xs">${mInv}</td>
+            <td class="md:hidden px-3 py-3 align-top"><div class="text-xs text-gray-200">${mInv}</div><div class="text-[9px] text-gray-500 mt-0.5">@${formatCurrency(pr, 'USD')}</div></td>
+            <td class="hidden md:table-cell px-3 py-3 text-gold-400 text-right align-middle text-xs">${mBtc}</td>
+            <td class="hidden md:table-cell px-3 py-3 text-right align-middle"><div class="flex flex-col items-end"><span class="${color} text-xs">${mDiff}</span><span class="text-[9px] ${color} opacity-80 mt-0.5">${mPer}</span></div></td>
+            <td class="md:hidden px-3 py-3 text-right align-top"><div class="text-gold-400 text-xs">${mBtc}</div><div class="flex flex-col items-end mt-0.5"><span class="${color} text-[10px]">${mDiff}</span><span class="text-[8px] ${color} opacity-80">${mPer}</span></div></td>
+            <td class="px-3 py-3 text-center align-top md:align-middle">
+                <div class="flex flex-col md:flex-row justify-center items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                    <button class="w-6 h-6 md:w-7 md:h-7 rounded bg-white/10 hover:bg-gold-500 hover:text-dark text-gray-400 flex items-center justify-center text-[10px] md:text-xs transition-colors" onclick="editTransaction(${t.rowNumber})"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="w-6 h-6 md:w-7 md:h-7 rounded bg-white/10 hover:bg-danger hover:text-white text-gray-400 flex items-center justify-center text-[10px] md:text-xs transition-colors" onclick="deleteTransaction(${t.rowNumber})"><i class="fas fa-trash"></i></button>
                 </div>
             </td>
         `;
@@ -868,37 +779,101 @@ function renderHistory() {
 }
 
 function fullRender() {
-    isDataLoaded = true; loadingEl.classList.add('hidden'); mainContentEl.classList.remove('hidden');
+    isDataLoaded = true; 
+    loadingEl.classList.add('hidden'); 
+    mainContentEl.classList.remove('hidden');
+    mainContentEl.classList.add('flex');
     renderSummary(); renderGoal(); renderBadges(); renderChart(); renderHistory();
 }
 
-// ---------- STREAMING_CHUNK:Form Handling (Add, Edit, Delete)... ----------
+// --- Interactions ---
+function togglePrivacy() {
+    isPrivacyMode = !isPrivacyMode;
+    localStorage.setItem('isPrivacyMode', isPrivacyMode);
+    const icon = document.getElementById('privacyToggleIcon');
+    icon.className = isPrivacyMode ? 'fas fa-eye-slash text-gray-600' : 'fas fa-eye text-sm';
+    if (isDataLoaded) fullRender();
+}
+
+async function refreshBTCPrice() {
+    const btn = document.getElementById('refreshPriceBtn');
+    btn.querySelector('i').classList.add('animate-spin');
+    try {
+        const data = await fetchWithRetry('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        if (data?.bitcoin) { 
+            btcPriceData = { price: data.bitcoin.usd, change: data.bitcoin.usd_24h_change };
+            renderSummary(); renderHistory();
+            Toast.fire({ icon: 'success', title: 'Price updated' });
+        }
+    } catch(e) {}
+    finally { btn.querySelector('i').classList.remove('animate-spin'); }
+}
+
+async function setGoal() {
+    const { value: newGoal } = await Swal.fire({
+        title: 'Set Target BTC', input: 'text', 
+        inputAttributes: { inputmode: 'decimal', placeholder: 'e.g. 1.0' },
+        inputValue: btcGoal, showCancelButton: true, confirmButtonText: 'Save',
+        customClass: { popup: 'dark-swal', confirmButton: 'dark-swal-confirm', cancelButton: 'dark-swal-cancel', input: 'dark-swal-input font-num' },
+        inputValidator: (val) => {
+            const num = parseFloat(val.replace(/,/g, ''));
+            if (!val || isNaN(num) || num <= 0) return 'Enter a valid number greater than 0';
+        }
+    });
+    if (newGoal) {
+        const parsed = parseFloat(newGoal.replace(/,/g, ''));
+        const btn = document.getElementById('goalBtn');
+        const orgHtml = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
+        try {
+            await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'setGoal', goal: parsed }) });
+            btcGoal = parsed; renderGoal(); Toast.fire({ icon: 'success', title: 'Goal updated' });
+        } catch (e) { Toast.fire({ icon: 'error', title: 'Failed to save' }); }
+        finally { btn.innerHTML = orgHtml; btn.disabled = false; }
+    }
+}
+
+// Form Formatting
 function unformat(v) { return v.toString().replace(/,/g, ''); }
-function formatInp(v) { let p = v.toString().replace(/[^0-9.]/g, '').split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); return p.join('.'); }
+function formatInp(v) { let p = v.toString().replace(/[^0-9.]/g, '').split('.'); if(p[0]) p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); return p.join('.'); }
 [priceInput, amountInput].forEach(i => i.addEventListener('input', e => { e.target.value = formatInp(unformat(e.target.value)); }));
 
+function fillLivePrice() {
+    if (!btcPriceData || btcPriceData.price === 0) return Toast.fire({ icon: 'warning', title: 'Wait for price data' });
+    let p = btcPriceData.price;
+    if (amountInputCurrency === 'THB') p *= thbRate;
+    priceInput.value = formatInp(p.toFixed(2));
+}
+
+// Form Submit
 form.addEventListener('submit', async e => {
-    e.preventDefault(); submitBtn.disabled = true; submitBtnText.classList.add('hidden'); submitSpinner.classList.remove('hidden');
-    const date = document.getElementById('date').value; let pr = parseFloat(unformat(priceInput.value)), am = parseFloat(unformat(amountInput.value));
-    if (isNaN(pr) || isNaN(am)) { showPremiumAlert('Warning', 'Invalid numeric values', 'warning'); resetBtn(); return; }
+    e.preventDefault(); 
+    const sBtnText = document.getElementById('submitBtnText'), sSpinner = document.getElementById('submitSpinner'), btn = document.getElementById('submitBtn');
+    btn.disabled = true; sBtnText.classList.add('hidden'); sSpinner.classList.remove('hidden');
+    
+    const date = document.getElementById('date').value; 
+    let pr = parseFloat(unformat(priceInput.value)), am = parseFloat(unformat(amountInput.value));
+    
+    if (isNaN(pr) || isNaN(am)) { Toast.fire({ icon: 'warning', title: 'Invalid inputs' }); resetBtn(); return; }
     if (amountInputCurrency === 'THB') { am /= thbRate; pr /= thbRate; }
+    
     try {
         if (editingRow) await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', row: editingRow }) });
-        const res = await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date, price: pr, amountUSD: am, amountBTC: am/pr }) });
-        if (res.status === 'success') { await fetchTransactions(); fullRender(); closeAddModal(); Toast.fire({ icon: 'success', title: 'Ledger updated' }); }
-    } catch (e) { showPremiumAlert('Error', 'Transaction failed', 'error'); } finally { resetBtn(); }
+        await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add', date, price: pr, amountUSD: am, amountBTC: am/pr }) });
+        await fetchTransactions(); fullRender(); closeAddModal(); Toast.fire({ icon: 'success', title: 'Record saved' });
+    } catch (e) { Toast.fire({ icon: 'error', title: 'Error saving' }); } 
+    finally { resetBtn(); }
+    
+    function resetBtn() { btn.disabled = false; sBtnText.classList.remove('hidden'); sSpinner.classList.add('hidden'); }
 });
 
-function resetBtn() { submitBtn.disabled = false; submitBtnText.classList.remove('hidden'); submitSpinner.classList.add('hidden'); }
-
 async function deleteTransaction(rn) {
-    const res = await Swal.fire({ title: 'Remove Record?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Remove', background: 'rgba(20,20,20,0.95)', customClass: { popup: 'premium-swal', confirmButton: 'premium-swal-cancel !bg-red-500/20 !text-red-400 border border-red-500/50', cancelButton: 'premium-swal-cancel' } });
+    const res = await Swal.fire({ title: 'Delete record?', text: 'This action cannot be undone.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Delete', customClass: { popup: 'dark-swal', confirmButton: 'bg-danger text-white border-none', cancelButton: 'dark-swal-cancel' } });
     if (res.isConfirmed) {
-        Swal.fire({ title: 'Updating...', allowOutsideClick: false, showConfirmButton: false, background: 'rgba(20,20,20,0.95)', customClass: { popup: 'premium-swal' }, didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'Deleting...', allowOutsideClick: false, showConfirmButton: false, customClass: { popup: 'dark-swal' }, didOpen: () => Swal.showLoading() });
         try {
-            const r = await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', row: rn }) });
-            if (r.status === 'success') { transactions = transactions.filter(t => t.rowNumber !== rn); fullRender(); Swal.fire({ icon: 'success', title: 'Removed', timer: 1500, showConfirmButton: false, background: 'rgba(20,20,20,0.95)', customClass: { popup: 'premium-swal' } }); } 
-        } catch (e) { await fetchTransactions(); fullRender(); showPremiumAlert('Error', 'Server Sync Failed', 'error'); }
+            await fetchWithRetry(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', row: rn }) });
+            transactions = transactions.filter(t => t.rowNumber !== rn); fullRender(); Swal.fire({ icon: 'success', title: 'Deleted', timer: 1500, showConfirmButton: false, customClass: { popup: 'dark-swal' } });
+        } catch (e) { Toast.fire({ icon: 'error', title: 'Delete failed' }); }
     }
 }
 
@@ -907,31 +882,36 @@ function editTransaction(rn) {
     editingRow = rn; const d = new Date(t.date);
     document.getElementById('date').value = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,0)}-${d.getDate().toString().padStart(2,0)}`;
     setCurrencyToggle('USD'); priceInput.value = formatInp(t.price); amountInput.value = formatInp(t.amountUSD);
-    document.getElementById('formTitle').textContent = "Modify Record"; 
-    document.getElementById('formIcon').className = "fas fa-pen text-lg";
-    document.getElementById('submitBtnText').textContent = "Update Ledger"; 
+    
+    document.getElementById('formTitle').textContent = "Edit Transaction";
+    document.getElementById('formIcon').className = "fas fa-pen";
+    document.getElementById('submitBtnText').textContent = "Update Record";
     openAddModal(); 
 }
 
 function cancelEdit() {
     editingRow = null; form.reset(); document.getElementById('date').valueAsDate = new Date();
-    document.getElementById('formTitle').textContent = "New Acquisition"; 
-    document.getElementById('formIcon').className = "fas fa-plus text-lg";
-    document.getElementById('submitBtnText').textContent = "Confirm Execute";
+    document.getElementById('formTitle').textContent = "Add Transaction";
+    document.getElementById('formIcon').className = "fas fa-plus";
+    document.getElementById('submitBtnText').textContent = "Save Record";
 }
 
 function setCurrencyToggle(c) {
     amountInputCurrency = c; 
     document.querySelectorAll('#amountCurrencyToggle button').forEach(b => {
-        if (b.dataset.currency === c) {
-            b.className = 'flex-1 py-2 text-xs font-semibold rounded-lg transition-colors bg-white/10 text-white shadow-sm';
+        if(b.dataset.currency === c) {
+            b.classList.add('bg-gold-500', 'text-dark', 'font-bold');
+            b.classList.remove('text-gray-400');
         } else {
-            b.className = 'flex-1 py-2 text-xs font-semibold rounded-lg text-gray-500 hover:text-white transition-colors bg-transparent';
+            b.classList.remove('bg-gold-500', 'text-dark', 'font-bold');
+            b.classList.add('text-gray-400');
         }
     });
     document.querySelectorAll('.price-currency-label').forEach(l => l.textContent = c);
 }
+
 document.getElementById('amountCurrencyToggle').addEventListener('click', e => e.target.tagName === 'BUTTON' && setCurrencyToggle(e.target.dataset.currency));
+
 document.getElementById('currencyToggleBtn').addEventListener('click', () => { 
     displayCurrency = displayCurrency === 'USD' ? 'THB' : 'USD'; 
     document.getElementById('currencyToggleText').textContent = displayCurrency === 'USD' ? 'THB' : 'USD'; 
@@ -939,14 +919,15 @@ document.getElementById('currencyToggleBtn').addEventListener('click', () => {
     renderSummary(); renderHistory(); 
 });
 
-// ---------- STREAMING_CHUNK:Bootstrapping application... ----------
+// INITIALIZE
 async function initializeApp() {
-    updatePrivacyIcon();
-    document.getElementById('date').valueAsDate = new Date();
+    const icon = document.getElementById('privacyToggleIcon');
+    icon.className = isPrivacyMode ? 'fas fa-eye-slash text-gray-600' : 'fas fa-eye text-sm';
     
+    document.getElementById('date').valueAsDate = new Date();
     fetchBlockHeight(); setInterval(fetchBlockHeight, 60000);
 
-    const timeout = setTimeout(() => { if (!isDataLoaded) fullRender(); }, 8000);
+    const timeout = setTimeout(() => { if (!isDataLoaded) fullRender(); }, 10000);
     try { await fetchAPIs(); await fetchTransactions(); } 
     finally { clearTimeout(timeout); fullRender(); }
 }
@@ -955,7 +936,7 @@ initializeApp();
 function exportToCSV() {
     let csv = "data:text/csv;charset=utf-8,Date,Price(USD),Amount(USD),Amount(BTC)\n";
     transactions.forEach(t => { const d = new Date(t.date); csv += `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,0)}-${d.getDate().toString().padStart(2,0)},${t.price},${t.amountUSD},${t.amountBTC}\n`; });
-    const link = document.createElement("a"); link.href = encodeURI(csv); link.download = "VIP_Portfolio.csv"; link.click();
+    const link = document.createElement("a"); link.href = encodeURI(csv); link.download = "portfolio.csv"; link.click();
 }
 </script>
 </body>
