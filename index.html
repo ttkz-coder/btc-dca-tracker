@@ -900,7 +900,36 @@ function cancelEdit() {
 }
 
 function setCurrencyToggle(c) {
+    // 1. เช็คว่ากำลังเปลี่ยนจากสกุลเงินอะไร ไปเป็นอะไร
+    const previousCurrency = amountInputCurrency;
     amountInputCurrency = c; 
+
+    // 2. แปลงตัวเลขในช่องกรอก (ถ้ามีตัวเลขอยู่)
+    let currentAmount = parseFloat(unformat(amountInput.value));
+    let currentPrice = parseFloat(unformat(priceInput.value));
+
+    // เช็คว่ากดสลับไปมาจริงๆ ไม่ได้กดย้ำปุ่มเดิม และมีตัวเลขอยู่
+    if (previousCurrency !== c) {
+        if (!isNaN(currentAmount)) {
+            if (c === 'THB') {
+                // จาก USD -> THB (คูณเรท)
+                amountInput.value = formatInp((currentAmount * thbRate).toFixed(2));
+            } else if (c === 'USD') {
+                // จาก THB -> USD (หารเรท)
+                amountInput.value = formatInp((currentAmount / thbRate).toFixed(2));
+            }
+        }
+        
+        if (!isNaN(currentPrice)) {
+             if (c === 'THB') {
+                priceInput.value = formatInp((currentPrice * thbRate).toFixed(2));
+            } else if (c === 'USD') {
+                priceInput.value = formatInp((currentPrice / thbRate).toFixed(2));
+            }
+        }
+    }
+
+    // 3. ปรับ UI (สีปุ่ม)
     document.querySelectorAll('#amountCurrencyToggle button').forEach(b => {
         if(b.dataset.currency === c) {
             b.classList.add('bg-gold-500', 'text-dark', 'font-bold');
