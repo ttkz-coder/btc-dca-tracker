@@ -1,4 +1,4 @@
-const SHEET_NAME = "BTCTransactions"; 
+const SHEET_NAME = "BTCTransactions";
 const SETTINGS_SHEET_NAME = "Settings";
 
 // [FAST LOADING] รวมการเรียก Spreadsheet ไว้ที่เดียว เพื่อลดภาระการดึงข้อมูลจาก Server
@@ -6,7 +6,7 @@ function getSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let txSheet = ss.getSheetByName(SHEET_NAME);
   let setSheet = ss.getSheetByName(SETTINGS_SHEET_NAME);
-  
+
   // เช็คและสร้าง Sheet แบบรวบรัด (ถ้ามี Sheet อยู่แล้วโค้ดส่วนนี้จะข้ามไปเลย ทำให้ไวขึ้น)
   if (!txSheet) {
     txSheet = ss.insertSheet(SHEET_NAME);
@@ -16,84 +16,136 @@ function getSheets() {
   if (!setSheet) {
     setSheet = ss.insertSheet(SETTINGS_SHEET_NAME);
     setSheet.appendRow(["Key", "Value"]);
-    setSheet.appendRow(["BTC_GOAL", 1.0]); 
+    setSheet.appendRow(["BTC_GOAL", 1.0]);
   }
-  
-  return { txSheet, setSheet };
+
+  return { ss, txSheet, setSheet };
+}
+
+function jsonOut(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// แปลงวันที่เป็น "yyyy-MM-dd" ตาม Timezone ของชีต เพื่อไม่ให้วันที่เลื่อนเมื่อเปิดจากเครื่องที่ Timezone ต่างกัน
+function formatDateCell(value, tz) {
+  if (value instanceof Date) return Utilities.formatDate(value, tz, "yyyy-MM-dd");
+  return String(value);
+}
+
+// อ่านข้อมูลทั้งหมด (ใช้ทั้ง doGet และตอบกลับหลังบันทึก เพื่อให้ Client ไม่ต้องยิง request ซ้ำ)
+function readAll(sheets) {
+  const sheet = sheets.txSheet;
+  const tz = sheets.ss.getSpreadsheetTimeZone();
+  const lastRow = sheet.getLastRow();
+  const transactions = [];
+
+  // Bulk Read ครั้งเดียว ระบุ 5 คอลัมน์ชัดเจน
+  if (lastRow > 1) {
+    const data = sheet.getRange(2, 1, lastRow - 1, 5).getValues();
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      if (row[1] && row[2]) { // เช็คว่ามี Date และ Price
+        transactions.push({
+          rowNumber: i + 2,
+          id: row[0] instanceof Date ? row[0].getTime() : null, // Timestamp ใช้ยืนยันว่าเป็นแถวเดิม
+          date: formatDateCell(row[1], tz),
+          price: Number(row[2]),
+          amountUSD: Number(row[3]),
+          amountBTC: Number(row[4])
+        });
+      }
+    }
+  }
+
+  let btcGoal = 1.0;
+  const settingsData = sheets.setSheet.getDataRange().getValues();
+  for (let i = 0; i < settingsData.length; i++) {
+    if (settingsData[i][0] === "BTC_GOAL") {
+      btcGoal = Number(settingsData[i][1]) || 1.0;
+      break;
+    }
+  }
+
+  return { transactions: transactions, btcGoal: btcGoal };
+}
+
+// หาแถวที่ต้องการแก้/ลบ โดยยืนยันด้วย Timestamp (id) หรือ ราคา+ยอดเงิน
+// ป้องกันการลบผิดแถวเมื่อเลขแถวเลื่อน (เช่น มีการลบจากอีกเครื่อง หรือแก้ในชีตโดยตรง)
+function findRow(sheet, rowNumber, key) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return -1;
+  const data = sheet.getRange(2, 1, lastRow - 1, 5).getValues();
+  const matches = (r) => {
+    if (key.id) return r[0] instanceof Date && r[0].getTime() === Number(key.id);
+    return Math.abs(Number(r[2]) - Number(key.price)) < 1e-6 && Math.abs(Number(r[3]) - Number(key.amountUSD)) < 1e-6;
+  };
+  const idx = Number(rowNumber) - 2;
+  if (idx >= 0 && idx < data.length && matches(data[idx])) return idx + 2;
+  for (let i = 0; i < data.length; i++) {
+    if (matches(data[i])) return i + 2;
+  }
+  return -1;
+}
+
+function validateTx(d) {
+  const price = Number(d.price), amountUSD = Number(d.amountUSD), amountBTC = Number(d.amountBTC);
+  if (!d.date || !/^\d{4}-\d{2}-\d{2}$/.test(String(d.date))) throw new Error("Invalid date.");
+  if (!(price > 0) || !(amountUSD > 0) || !(amountBTC > 0) || !isFinite(amountBTC)) throw new Error("Invalid numbers.");
+  return [d.date, price, amountUSD, amountBTC];
 }
 
 function doGet(e) {
   try {
-    // 1. เรียกใช้งาน Sheets ทั้งหมดในคำสั่งเดียว
-    const sheets = getSheets();
-    const sheet = sheets.txSheet;
-    const settingsSheet = sheets.setSheet;
-    
-    const lastRow = sheet.getLastRow();
-    let resultTransactions = [];
-    
-    // 2. ใช้ Bulk Read และระบุจำนวนคอลัมน์ชัดเจน (5 คอลัมน์) เพื่อไม่ต้องเสียเวลาหา LastColumn
-    if (lastRow > 1) {
-      const data = sheet.getRange(2, 1, lastRow - 1, 5).getValues();
-      
-      // 3. ใช้ For Loop พื้นฐานแทน .map().filter() เพื่อเร่งความเร็วประมวลผลของ V8 Engine ให้สูงสุด
-      for (let i = 0; i < data.length; i++) {
-        const row = data[i];
-        if (row[1] && row[2]) { // เช็คว่ามี Date และ Price
-          resultTransactions.push({
-            rowNumber: i + 2,
-            date: row[1],
-            price: row[2],
-            amountUSD: row[3],
-            amountBTC: row[4]
-          });
-        }
-      }
-    }
-
-    // 4. ดึงข้อมูล Settings 
-    let btcGoal = 1.0;
-    const settingsData = settingsSheet.getDataRange().getValues();
-    for (let i = 0; i < settingsData.length; i++) {
-      if (settingsData[i][0] === "BTC_GOAL") {
-        btcGoal = Number(settingsData[i][1]) || 1.0;
-        break;
-      }
-    }
-
-    const responseData = { transactions: resultTransactions, btcGoal: btcGoal };
-    return ContentService.createTextOutput(JSON.stringify(responseData)).setMimeType(ContentService.MimeType.JSON);
+    return jsonOut(readAll(getSheets()));
   } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ error: error.message })).setMimeType(ContentService.MimeType.JSON);
+    return jsonOut({ status: "error", error: error.message, message: error.message });
   }
 }
 
 function doPost(e) {
+  const lock = LockService.getScriptLock();
   try {
+    if (!e || !e.postData) throw new Error("Missing request body.");
+    const requestData = JSON.parse(e.postData.contents);
+
+    // Lock ป้องกันการเขียนชนกัน (เช่น กดบันทึกจาก 2 เครื่องพร้อมกัน)
+    lock.waitLock(20000);
+
     const sheets = getSheets();
     const sheet = sheets.txSheet;
-    const requestData = JSON.parse(e.postData.contents);
-    
+
+    // กันบันทึกซ้ำ: ถ้า request เดิมถูก retry (เน็ตหลุดตอนรอผลตอบกลับ) จะไม่บันทึกซ้ำ
+    const cache = CacheService.getScriptCache();
+    const reqKey = requestData.reqId ? "req_" + String(requestData.reqId).slice(0, 200) : null;
+    if (reqKey && cache.get(reqKey)) {
+      const fresh = readAll(sheets);
+      fresh.status = "success"; fresh.action = requestData.action; fresh.duplicate = true;
+      return jsonOut(fresh);
+    }
+
     if (requestData.action === 'add') {
-      const { date, price, amountUSD, amountBTC } = requestData;
-      sheet.appendRow([new Date(), date, Number(price), Number(amountUSD), Number(amountBTC)]);
-      return ContentService.createTextOutput(JSON.stringify({ status: "success", action: "add" })).setMimeType(ContentService.MimeType.JSON);
+      const values = validateTx(requestData);
+      sheet.appendRow([new Date()].concat(values));
+
+    } else if (requestData.action === 'update') {
+      const values = validateTx(requestData);
+      const row = findRow(sheet, requestData.row, requestData.key || {});
+      if (row < 2) throw new Error("Record not found. Please reload.");
+      // แก้ไขในแถวเดิมครั้งเดียว (เดิมใช้ ลบ+เพิ่ม ถ้าเพิ่มล้มเหลวข้อมูลจะหาย)
+      sheet.getRange(row, 2, 1, 4).setValues([values]);
 
     } else if (requestData.action === 'delete') {
-      const rowToDelete = requestData.row;
-      if (rowToDelete && rowToDelete > 1) { 
-        sheet.deleteRow(rowToDelete);
-        return ContentService.createTextOutput(JSON.stringify({ status: "success", action: "delete" })).setMimeType(ContentService.MimeType.JSON);
-      } else {
-        throw new Error("Invalid row number.");
-      }
+      const row = requestData.key ? findRow(sheet, requestData.row, requestData.key) : Number(requestData.row);
+      if (!(row > 1) || row > sheet.getLastRow()) throw new Error("Record not found. Please reload.");
+      sheet.deleteRow(row);
 
     } else if (requestData.action === 'setGoal') {
       const newGoal = Number(requestData.goal);
+      if (!(newGoal > 0)) throw new Error("Invalid goal.");
       const settingsSheet = sheets.setSheet;
       const settingsData = settingsSheet.getDataRange().getValues();
       let found = false;
-      
+
       for (let i = 0; i < settingsData.length; i++) {
         if (settingsData[i][0] === "BTC_GOAL") {
           settingsSheet.getRange(i + 1, 2).setValue(newGoal);
@@ -101,16 +153,25 @@ function doPost(e) {
           break;
         }
       }
-      
+
       if (!found) {
         settingsSheet.appendRow(["BTC_GOAL", newGoal]);
       }
-      return ContentService.createTextOutput(JSON.stringify({ status: "success", action: "setGoal", goal: newGoal })).setMimeType(ContentService.MimeType.JSON);
 
     } else {
       throw new Error("Invalid action parameter: " + requestData.action);
     }
+
+    SpreadsheetApp.flush();
+    if (reqKey) cache.put(reqKey, "1", 600);
+
+    // ส่งข้อมูลล่าสุดกลับไปเลย Client ไม่ต้องโหลดใหม่อีกรอบ (ลดจาก 2-3 request เหลือ 1)
+    const result = readAll(sheets);
+    result.status = "success"; result.action = requestData.action;
+    return jsonOut(result);
   } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: error.message })).setMimeType(ContentService.MimeType.JSON);
+    return jsonOut({ status: "error", message: error.message });
+  } finally {
+    lock.releaseLock();
   }
 }
