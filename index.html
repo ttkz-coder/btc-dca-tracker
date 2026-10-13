@@ -269,24 +269,24 @@
             <div id="moodCard" class="glass-card gold-border overflow-hidden">
                 <div class="grid grid-cols-1 md:grid-cols-5">
                     <div id="mascotStage" class="mood-stage md:col-span-3 relative h-[300px] md:h-[380px]">
-                        <canvas id="mascotCanvas" class="absolute inset-0 w-full h-full" aria-label="มาสคอต 3D ส้มจี๊ด แตะเพื่อเล่นด้วย"></canvas>
-                        <div id="mascotFallback" class="absolute inset-0 flex items-center justify-center text-7xl pointer-events-none select-none">🍊</div>
+                        <canvas id="mascotCanvas" class="absolute inset-0 w-full h-full" aria-label="มาสคอต 3D น้องบิต แตะเพื่อเล่นด้วย"></canvas>
+                        <div id="mascotFallback" class="absolute inset-0 flex items-center justify-center text-7xl pointer-events-none select-none">🪙</div>
                         <div class="absolute top-3 left-3 flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-full px-3 py-1 backdrop-blur-md text-[10px] font-num tracking-widest uppercase text-gray-300 pointer-events-none">
-                            <span id="moodEmoji">🍊</span> <span id="moodLabel">Loading</span>
+                            <span id="moodEmoji">🪙</span> <span id="moodLabel">Loading</span>
                         </div>
                         <button id="moodDemoBtn" type="button" title="ลองดูทุกอารมณ์" class="absolute top-3 right-3 h-7 px-2.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all text-[10px] flex items-center gap-1">
                             <i class="fas fa-masks-theater"></i> <span id="moodDemoText">Preview</span>
                         </button>
-                        <p class="absolute bottom-2 left-0 right-0 text-center text-[9px] text-gray-600 tracking-widest uppercase pointer-events-none">แตะส้มจี๊ดเพื่อแหย่เล่น</p>
+                        <p class="absolute bottom-2 left-0 right-0 text-center text-[9px] text-gray-600 tracking-widest uppercase pointer-events-none">แตะน้องบิตเพื่อแหย่เล่น</p>
                     </div>
                     <div class="md:col-span-2 p-5 md:pl-2 flex flex-col justify-center gap-4">
                         <div>
                             <h3 class="text-xs tracking-[0.15em] text-gray-400 uppercase flex items-center gap-2 mb-2">
-                                <span class="text-sm leading-none">🍊</span> ส้มจี๊ด Mood
+                                <i class="fa-brands fa-bitcoin text-gold-400"></i> น้องบิต Mood
                             </h3>
                             <p id="moodTitle" class="text-xl md:text-2xl font-bold text-white">กำลังเช็คกราฟ...</p>
                         </div>
-                        <div id="moodSpeech" class="speech-bubble px-4 py-3 text-sm text-gray-200 leading-relaxed">รอแป๊บค่ะ ส้มจี๊ดขอดูราคาก่อนว่าวันนี้ต้องยิ้มหรือร้องไห้</div>
+                        <div id="moodSpeech" class="speech-bubble px-4 py-3 text-sm text-gray-200 leading-relaxed">รอแป๊บค่ะ น้องบิตขอดูราคาก่อนว่าวันนี้ต้องยิ้มหรือร้องไห้</div>
                         <div>
                             <div class="flex justify-between items-end mb-1.5">
                                 <span class="text-[10px] text-gray-500 uppercase tracking-[0.15em]">BTC 24H</span>
@@ -816,20 +816,20 @@ function renderSummary() {
     renderMood();
 }
 
-// --- 3D Mascot Mood (ส้มจี๊ด) ---
+// --- 3D Mascot Mood (น้องบิต) ---
 // อารมณ์ของมาสคอตอิงจาก % เปลี่ยนแปลง 24 ชม. ของ BTC ส่วนฉาก 3D อยู่ใน module script ด้านล่าง
 const MOOD_ORDER = ['moon', 'happy', 'neutral', 'sad', 'panic'];
 const MOOD_INFO = {
     moon:    { emoji: '🚀', label: 'To the Moon', title: 'ขึ้นแรงจนหัวหมุน!', glow: 'rgba(245,208,97,0.30)', color: 'text-gold-400',
-               lines: ['ขึ้นแรงขนาดนี้ อย่าเพิ่งเขียนใบลาออกนะคะเบียร์ 🚀', 'กราฟเขียวจนตาลาย ส้มจี๊ดขอใส่แว่นกันแดดแป๊บค่ะ 😎', 'วันนี้ใครๆ ก็เป็นเซียนค่ะ... เดี๋ยวก็รู้ว่าใครแค่ฟลุ๊ค', 'ดอยเก่ายังไม่ทันลง ดอยใหม่ก็มาแล้วค่ะ'] },
+               lines: ['ขึ้นแรงขนาดนี้ อย่าเพิ่งเขียนใบลาออกนะคะเบียร์ 🚀', 'กราฟเขียวจนตาลาย น้องบิตขอสวมมงกุฎให้สมฐานะราชาแป๊บค่ะ 👑', 'วันนี้ใครๆ ก็เป็นเซียนค่ะ... เดี๋ยวก็รู้ว่าใครแค่ฟลุ๊ค', 'ดอยเก่ายังไม่ทันลง ดอยใหม่ก็มาแล้วค่ะ'] },
     happy:   { emoji: '😊', label: 'Bullish', title: 'เขียวกำลังดี ยิ้มได้', glow: 'rgba(76,175,80,0.22)', color: 'text-success',
                lines: ['เขียวนิดๆ พอให้ยิ้มได้ แต่อย่าเพิ่งไปอวดใครนะคะ', 'DCA ต่อไปค่ะ อย่าเพิ่งเหลิง', 'พอร์ตยิ้ม เจ้าของพอร์ตก็ยิ้ม แต่เงินเดือนยังเท่าเดิมนะคะ', 'ขึ้นแค่นี้อย่าเพิ่งซื้อไล่ราคานะคะ ใจเย็นๆ'] },
     neutral: { emoji: '😐', label: 'Sideways', title: 'นิ่ง... นิ่งมาก', glow: 'rgba(156,163,175,0.16)', color: 'text-gray-300',
                lines: ['นิ่งยิ่งกว่าเงินเดือนที่ขึ้นปีละครั้งอีกค่ะ', 'ไซด์เวย์แบบนี้ ไปทำงานจริงๆ บ้างเถอะค่ะ', 'ไม่ขึ้นไม่ลง เหมือนชีวิตวัยทำงานเป๊ะเลยค่ะ 😐', 'ตลาดหลับ เราก็ DCA เงียบๆ ไปค่ะ'] },
     sad:     { emoji: '🥲', label: 'Bearish', title: 'แดงนิดหน่อย อย่าเพิ่งร้อง', glow: 'rgba(96,165,250,0.18)', color: 'text-orange-400',
-               lines: ['แดงนิดหน่อย ถือว่าลดราคาให้ซื้อเพิ่มละกันค่ะ', 'อย่าเพิ่งร้องค่ะ... เก็บน้ำตาไว้ตอนลง 50% ทีเดียว 🥲', 'DCA มีไว้สำหรับวันแบบนี้แหละค่ะ เลิกเปิดดูทุกห้านาทีได้แล้ว', 'ลงแค่นี้ไม่ตายหรอกค่ะ แต่ใจส้มจี๊ดเปรี้ยวจี๊ดเลย'] },
+               lines: ['แดงนิดหน่อย ถือว่าลดราคาให้ซื้อเพิ่มละกันค่ะ', 'อย่าเพิ่งร้องค่ะ... เก็บน้ำตาไว้ตอนลง 50% ทีเดียว 🥲', 'DCA มีไว้สำหรับวันแบบนี้แหละค่ะ เลิกเปิดดูทุกห้านาทีได้แล้ว', 'ลงแค่นี้ไม่ตายหรอกค่ะ แต่ใจน้องบิตห่อเหี่ยวเลย'] },
     panic:   { emoji: '😱', label: 'Panic', title: 'ดอยถล่ม! ตั้งสติก่อน', glow: 'rgba(255,77,77,0.28)', color: 'text-danger',
-               lines: ['ดอยถล่มค่ะ! ใครบอกว่าใจเพชร ออกมาคุยกันหน่อย 😱', 'ปิดแอปแล้วไปนอนเถอะค่ะ เชื่อส้มจี๊ด', 'คนกล้าซื้อตอนนี้คือเศรษฐีในอนาคตค่ะ... หรือไม่ก็คนดอยรุ่นใหม่', 'อย่ากดขายตอนตกใจนะคะ เดี๋ยวส้มจี๊ดหัวเราะใส่'] }
+               lines: ['ดอยถล่มค่ะ! ใครบอกว่าใจเพชร ออกมาคุยกันหน่อย 😱', 'ปิดแอปแล้วไปนอนเถอะค่ะ เชื่อน้องบิต', 'คนกล้าซื้อตอนนี้คือเศรษฐีในอนาคตค่ะ... หรือไม่ก็คนดอยรุ่นใหม่', 'อย่ากดขายตอนตกใจนะคะ เดี๋ยวน้องบิตหัวเราะใส่'] }
 };
 let moodPreview = null, moodPreviewTimer = null, lastMoodKey = null, lastLineIdx = -1;
 
@@ -1183,7 +1183,7 @@ async function initializeApp() {
     
     document.getElementById('date').valueAsDate = new Date();
     fetchBlockHeight(); setInterval(fetchBlockHeight, 60000);
-    // อัปเดตราคาเงียบๆ ทุก 60 วินาที ให้อารมณ์ส้มจี๊ดตามตลาดจริง (ข้ามตอนแท็บถูกซ่อน)
+    // อัปเดตราคาเงียบๆ ทุก 60 วินาที ให้อารมณ์น้องบิตตามตลาดจริง (ข้ามตอนแท็บถูกซ่อน)
     setInterval(async () => {
         if (document.visibilityState !== 'visible' || !isDataLoaded) return;
         try {
@@ -1304,11 +1304,11 @@ function makeEnvironment(renderer) {
 
 // ค่าพารามิเตอร์อารมณ์ของตัวละคร (ฝั่งข้อความอยู่ใน MOOD_INFO ของ script หลัก)
 const MOODS = {
-    moon:    { bounce: 0.22, speed: 7.5, arms: 2.6,  back: 0,    wave: 0.45, rim: 0xffcf4d, particles: 'confetti' },
-    happy:   { bounce: 0.1,  speed: 4.2, arms: 0.9,  back: 0,    wave: 0.9,  rim: 0x63e07f, particles: 'sparkle' },
-    neutral: { bounce: 0.025,speed: 1.6, arms: 0.1,  back: 0.45, wave: 0,    rim: 0xc3c9d4, particles: 'dust' },
-    sad:     { bounce: 0.01, speed: 1.0, arms: 0.12, back: 0.12, wave: 0,    rim: 0x5b9cff, particles: 'rain',  cloud: 0x8e98a8, droop: 0.14 },
-    panic:   { bounce: 0.045,speed: 15,  arms: 2.75, back: 0,    wave: 0.3,  rim: 0xff4646, particles: 'storm', cloud: 0x3f4552, sweat: true, shake: 0.04, flash: true },
+    moon:    { bounce: 0.24, speed: 7.5, wiggle: 0.2,  step: 0.12, armR: 2.6,  armL: 1.3,  wave: 0.5,  rim: 0xffcf4d, particles: 'confetti' },
+    happy:   { bounce: 0.12, speed: 4.6, wiggle: 0.16, step: 0.08, armR: 1.5,  armL: 0.45, wave: 0.9,  rim: 0x63e07f, particles: 'sparkle' },
+    neutral: { bounce: 0.03, speed: 1.8, wiggle: 0.06, step: 0.02, armR: 0.3,  armL: 0.25, wave: 0,    rim: 0xc3c9d4, particles: 'dust' },
+    sad:     { bounce: 0.008,speed: 1.0, wiggle: 0.02, step: 0,    armR: 0.05, armL: 0.02, wave: 0,    rim: 0x5b9cff, particles: 'rain',  cloud: 0x8e98a8 },
+    panic:   { bounce: 0.05, speed: 15,  wiggle: 0.04, step: 0.05, armR: 2.75, armL: 2.0,  wave: 0.3,  rim: 0xff4646, particles: 'storm', cloud: 0x3f4552, sweat: true, shake: 0.04, flash: true },
 };
 
 // ---------------------------------------------------------------- MASCOT
@@ -1330,296 +1330,124 @@ function initMascot() {
     const fill = new THREE.PointLight(0xfff0e6, 2, 8); fill.position.set(1.5, 0.5, 3); scene.add(fill);
     const flash = new THREE.PointLight(0xdfe8ff, 0, 12); flash.position.set(-0.3, 2.6, 1.5); scene.add(flash);
 
-    // Materials: cel-shading แบบอนิเมะ (MeshToonMaterial + เส้นขอบ inverted hull)
+    // Materials: PBR สมจริง (สะท้อนแสงจาก environment map) ไม่มีเส้นขอบการ์ตูน
     const gold = new THREE.MeshStandardMaterial({ color: 0xE2B850, metalness: 0.9, roughness: 0.28 });
-    const faceBack = new THREE.MeshStandardMaterial({ map: coinFaceTexture(true), metalness: 0.55, roughness: 0.38 });
-    const toonGrad = new THREE.DataTexture(new Uint8Array([150, 215, 255]), 3, 1, THREE.RedFormat);
-    toonGrad.minFilter = toonGrad.magFilter = THREE.NearestFilter; toonGrad.needsUpdate = true;
-    const toon = color => new THREE.MeshToonMaterial({ color, gradientMap: toonGrad });
-    const skin = toon(0xffdcc8), hair = toon(0xf8a5c8), tank = toon(0xff7424), denim = toon(0x4f78b5),
-          shoeMat = toon(0xffffff), orangeMat = toon(0xff8a1c), leafMat = toon(0x3fae4a);
-    const lineMat = new THREE.MeshBasicMaterial({ color: 0x4a1a30, side: THREE.BackSide });
-    // เส้นขอบ: ดันผิวออกตาม normal แล้ววาดด้านหลัง (ใช้ได้กับทุกทรง รวมถึงปอยผมเรียว)
-    const hulls = new WeakMap();
-    const hairLine = new THREE.MeshBasicMaterial({ color: 0xa8487a, side: THREE.BackSide });
-    const outline = (m, t = 0.008, mat = lineMat) => {
-        let h = hulls.get(m.geometry);
-        if (!h) {
-            h = m.geometry.clone();
-            const p = h.attributes.position, n = h.attributes.normal;
-            for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) + n.getX(i) * t, p.getY(i) + n.getY(i) * t, p.getZ(i) + n.getZ(i) * t);
-            hulls.set(m.geometry, h);
-        }
-        m.add(new THREE.Mesh(h, mat)); return m;
-    };
-    const lathe = (pts, mat, sz = 0.72) => {
-        const m = new THREE.Mesh(new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 40), mat);
-        m.scale.z = sz; return m;
-    };
+    const noiseTex = (base, dark, light, n = 5000) => canvasTexture(256, 256, (g, w, h) => {
+        g.fillStyle = base; g.fillRect(0, 0, w, h);
+        for (let i = 0; i < n; i++) { g.fillStyle = Math.random() < 0.5 ? dark : light; g.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 2, 1 + Math.random() * 2); }
+    });
+    const burlap = canvasTexture(256, 256, (g, w, h) => {   // เนื้อผ้ากระสอบ
+        g.fillStyle = '#9c7650'; g.fillRect(0, 0, w, h);
+        for (let i = 0; i < w; i += 4) { g.fillStyle = i % 8 ? 'rgba(70,45,20,0.35)' : 'rgba(210,175,130,0.3)'; g.fillRect(i, 0, 2, h); g.fillRect(0, i, w, 2); }
+    });
+    burlap.wrapS = burlap.wrapT = THREE.RepeatWrapping; burlap.repeat.set(3, 3);
+    const btcOrange = new THREE.MeshPhysicalMaterial({ color: 0xf7931a, roughness: 0.3, metalness: 0.1, clearcoat: 0.9, clearcoatRoughness: 0.12 });
+    const crownMat = new THREE.MeshStandardMaterial({ color: 0xf6c431, metalness: 1, roughness: 0.22 });
+    const ink = new THREE.MeshStandardMaterial({ color: 0x1e1e24, roughness: 0.45, metalness: 0.2 });
+    const glove = new THREE.MeshStandardMaterial({ color: 0xf7f5f0, roughness: 0.85, bumpMap: noiseTex('#888', '#666', '#aaa'), bumpScale: 0.4 });
+    const shoeMat = new THREE.MeshStandardMaterial({ color: 0xf0b416, roughness: 0.85, bumpMap: noiseTex('#888', '#666', '#aaa'), bumpScale: 0.5 });
+    const soleMat = new THREE.MeshStandardMaterial({ color: 0xf2efe8, roughness: 0.6 });
+    const bagMat = new THREE.MeshStandardMaterial({ map: burlap, bumpMap: burlap, bumpScale: 1.2, roughness: 0.95 });
+    const bagDark = new THREE.MeshStandardMaterial({ color: 0x5e4329, roughness: 0.9 });
+    const outline = m => m, scaleHull = m => m;
     const dropMat = new THREE.MeshStandardMaterial({ color: 0x8fd3ff, roughness: 0.05, transparent: true, opacity: 0.85 });
 
-    const bot = new THREE.Group(); bot.scale.setScalar(1.0); scene.add(bot);   // ตำแหน่ง/กระโดด
-    const body = new THREE.Group(); bot.add(body);                             // หมุน/เอียงตามอารมณ์
+    const S_BOT = 1.12;
+    const bot = new THREE.Group(); bot.scale.setScalar(S_BOT); scene.add(bot);   // ตำแหน่ง/กระโดด
+    const body = new THREE.Group(); bot.add(body);                             // ดุ๊กดิ๊ก/เอียงตามอารมณ์
 
-    // ---- ลำตัว (สัดส่วน ~3.5 หัว) ----
-    body.add(lathe([[0.001, 0.05], [0.25, 0.08], [0.26, 0.4], [0.235, 0.52], [0.16, 0.6], [0.075, 0.66], [0.06, 0.8]], skin));
-    const top = outline(lathe([[0.001, -0.47], [0.33, -0.47], [0.32, -0.33], [0.285, -0.1], [0.27, 0.08], [0.29, 0.28], [0.27, 0.42], [0.258, 0.46]], tank));
-    body.add(top);
-    const logoTex = canvasTexture(256, 128, (g, w, h) => {
-        g.font = '900 62px Inter, "Arial Black", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-        g.lineJoin = 'round'; g.lineWidth = 10; g.strokeStyle = '#2f3b3a'; g.strokeText('HODL', w * 0.42, h / 2);
-        g.fillStyle = '#8fd8cb'; g.fillText('HODL', w * 0.42, h / 2);
-        g.beginPath(); [[206, 18], [236, 18], [220, 54], [248, 54], [192, 116], [208, 68], [182, 68]].forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath();
-        g.lineWidth = 5; g.stroke(); g.fillStyle = '#ffe14d'; g.fill();
-    });
-    const logo = new THREE.Mesh(new THREE.CylinderGeometry(0.297, 0.283, 0.17, 24, 1, true, -0.75, 1.5), new THREE.MeshBasicMaterial({ map: logoTex, transparent: true, depthWrite: false }));
-    logo.position.y = 0.16; top.add(logo);
-    [-1, 1].forEach(s => {   // สายเสื้อกล้าม
-        const c = new THREE.CatmullRomCurve3([new THREE.Vector3(s * 0.13, 0.43, 0.19), new THREE.Vector3(s * 0.17, 0.6, 0.01), new THREE.Vector3(s * 0.13, 0.43, -0.19)]);
-        body.add(new THREE.Mesh(new THREE.TubeGeometry(c, 12, 0.022, 6), tank));
-    });
-    body.add(outline(lathe([[0.001, -0.72], [0.2, -0.72], [0.345, -0.7], [0.335, -0.58], [0.31, -0.42], [0.001, -0.42]], denim, 0.75)));
-    [-0.16, 0.16].forEach(x => {
-        const hem = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.16, 0.2, 20), denim)); hem.position.set(x, -0.72, 0); body.add(hem);
-        const thigh = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.085, 0.47, 16), skin)); thigh.position.set(x, -0.98, 0); body.add(thigh);
-        const knee = new THREE.Mesh(new THREE.SphereGeometry(0.086, 14, 10), skin); knee.position.set(x, -1.21, 0); body.add(knee);
-        const calf = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.083, 0.055, 0.36, 16), skin)); calf.position.set(x, -1.38, 0); body.add(calf);
-        const shoe = outline(new THREE.Mesh(new THREE.SphereGeometry(0.085, 18, 12), shoeMat)); shoe.scale.set(1, 0.6, 1.75); shoe.position.set(x, -1.56, 0.05); body.add(shoe);
-    });
-    const BOT_BASE_Y = GROUND + 1.61;
+    // ---- ตัว ₿ (extrude จาก shape) เอียงแบบโลโก้บิตคอยน์ ----
+    const bGroup = new THREE.Group(); bGroup.rotation.z = -0.2; body.add(bGroup);
+    const bShape = new THREE.Shape();
+    bShape.moveTo(-0.45, -0.8); bShape.lineTo(0.12, -0.8);
+    bShape.bezierCurveTo(0.68, -0.8, 0.7, -0.06, 0.2, -0.015);
+    bShape.bezierCurveTo(0.6, 0.06, 0.58, 0.8, 0.08, 0.8);
+    bShape.lineTo(-0.45, 0.8); bShape.closePath();
+    const hole = (x0, y0, x1, y1, bulge) => {
+        const h = new THREE.Path(); h.moveTo(x0, y0); h.lineTo(x1, y0);
+        h.bezierCurveTo(x1 + bulge, y0, x1 + bulge, y1, x1, y1); h.lineTo(x0, y1); h.closePath(); return h;
+    };
+    bShape.holes.push(hole(-0.2, 0.2, 0.06, 0.58, 0.2), hole(-0.2, -0.58, 0.1, -0.2, 0.24));
+    const tick = (x, y0, y1) => { const s = new THREE.Shape(); s.moveTo(x, y0); s.lineTo(x + 0.12, y0); s.lineTo(x + 0.12, y1); s.lineTo(x, y1); s.closePath(); return s; };
+    const BD = 0.34;
+    const bGeo = new THREE.ExtrudeGeometry(bShape, { depth: BD, bevelEnabled: true, bevelThickness: 0.07, bevelSize: 0.05, bevelSegments: 6, curveSegments: 32 });
+    bGeo.translate(0, 0, -BD / 2);
+    bGroup.add(scaleHull(new THREE.Mesh(bGeo, btcOrange), 1.035, 1.03, 1.25));
+    // ขีดบน-ล่างของ ₿ (บางกว่าตัวหลัก เพื่อไม่ให้หน้าซ้อนกันจนกะพริบ)
+    const TD = BD * 0.6;
+    const tickGeo = new THREE.ExtrudeGeometry([tick(-0.27, 0.7, 0.98), tick(-0.03, 0.7, 0.98), tick(-0.27, -0.98, -0.7), tick(-0.03, -0.98, -0.7)],
+        { depth: TD, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.03, bevelSegments: 4 });
+    tickGeo.translate(0, 0, -TD / 2);
+    const ticks = new THREE.Mesh(tickGeo, btcOrange);
+    bGroup.add(ticks);
 
-    // แขน (pivot ที่ไหล่)
+    // ---- มงกุฎทอง ----
+    const crown = new THREE.Group(); crown.position.set(-0.08, 1.06, 0); crown.rotation.z = 0.12; bGroup.add(crown);
+    crown.add(outline(new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.3, 0.16, 28), crownMat), 0.02));
+    for (let i = 0; i < 7; i++) {
+        const a = (i / 7) * Math.PI * 2;
+        const spike = outline(new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.22, 10), crownMat), 0.018);
+        spike.position.set(Math.sin(a) * 0.3, 0.18, Math.cos(a) * 0.3); crown.add(spike);
+        const ball = outline(new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 8), crownMat), 0.012);
+        ball.position.set(Math.sin(a) * 0.3, 0.3, Math.cos(a) * 0.3); crown.add(ball);
+    }
+    const gem = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 8), new THREE.MeshStandardMaterial({ color: 0xff3355, metalness: 0.3, roughness: 0.1 }));
+    gem.position.set(0, 0, 0.33); gem.scale.z = 0.6; crown.add(gem);
+    const sparkle = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.16), new THREE.MeshBasicMaterial({ map: dotTexture, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+    sparkle.position.set(0.25, 0.32, 0.3); crown.add(sparkle);
+
+    // ---- แขน (เส้นดำแบบการ์ตูน) + ถุงมือขาว ----
+    const makeGlove = () => {
+        const g = new THREE.Group();
+        const palm = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 16), glove); palm.scale.set(1, 1.05, 0.8);
+        [-0.06, 0, 0.06].forEach((x, i) => {
+            const f = new THREE.Mesh(new THREE.CapsuleGeometry(0.038, 0.08, 6, 12), glove); f.position.set(x, -0.13 - (i === 1 ? 0.02 : 0), 0.01); g.add(f);
+        });
+        const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(0.04, 0.06, 6, 12), glove); thumb.position.set(0.11, -0.01, 0.04); thumb.rotation.z = 0.9;
+        const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.035, 12, 24), glove); cuff.rotation.x = Math.PI / 2; cuff.position.y = 0.12;
+        g.add(palm, thumb, cuff); return g;
+    };
     const arms = [-1, 1].map(side => {
-        const pivot = new THREE.Group(); pivot.position.set(side * 0.29, 0.5, 0);
-        const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.068, 16, 10), skin);
-        const upper = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.066, 0.054, 0.4, 14), skin)); upper.position.y = -0.2;
-        const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.048, 12, 8), skin); elbow.position.y = -0.4;
-        const fore = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.053, 0.042, 0.36, 14), skin)); fore.position.y = -0.58;
-        const hand = outline(new THREE.Mesh(new THREE.SphereGeometry(0.05, 14, 10), skin)); hand.scale.set(0.85, 1.25, 0.6); hand.position.y = -0.8;
-        pivot.add(shoulder, upper, elbow, fore, hand); body.add(pivot); return pivot;
+        const pivot = new THREE.Group(); pivot.position.set(side * 0.55, -0.02, 0);
+        const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.48, 8), ink); arm.position.y = -0.24;
+        const hand = makeGlove(); hand.position.y = -0.58; if (side < 0) hand.scale.x = -1;
+        pivot.add(arm, hand); pivot.userData.hand = hand; body.add(pivot); return pivot;
     });
 
-    // ---- หัว: หน้าทรงอนิเมะ แก้มเรียว คางแหลม ----
-    const HR = 0.42;
-    const head = new THREE.Group(); head.position.y = 1.12; body.add(head);
-    const shapeHead = geo => {
-        const p = geo.attributes.position;
-        for (let i = 0; i < p.count; i++) {
-            let x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-            const ny = y / HR;
-            if (ny < 0) {
-                const k = Math.pow(-ny, 1.6);
-                x *= 1 - 0.4 * k; z *= 1 - 0.14 * k; y *= 1.08;
-                if (z > 0) z += 0.03 * -ny;
-            }
-            p.setXYZ(i, x * 0.92, y, z);
-        }
-        geo.computeVertexNormals(); return geo;
-    };
-    head.add(outline(new THREE.Mesh(shapeHead(new THREE.SphereGeometry(HR, 64, 48)), skin), 0.007));
-
-    // หน้า: วาดลายเส้นอนิเมะลง canvas แล้วฉายลงครึ่งหน้าของหัว (วาดใหม่เมื่ออารมณ์/สายตา/กะพริบเปลี่ยน)
-    const FW = HR * 0.92, FH = HR * 1.08, FS = 512;
-    const fx = x => (x / FW * 0.5 + 0.5) * FS, fy = y => (0.5 - y / FH * 0.5) * FS;
-    const faceCanvas = document.createElement('canvas'); faceCanvas.width = faceCanvas.height = FS;
-    const fg = faceCanvas.getContext('2d');
-    const faceTex = new THREE.CanvasTexture(faceCanvas); faceTex.colorSpace = THREE.SRGBColorSpace; faceTex.anisotropy = 4;
+    // ถุงเงิน ₿ ห้อยจากมือซ้าย (แกว่งเป็นลูกตุ้ม)
+    const bagPivot = new THREE.Group(); bagPivot.position.y = -0.1; arms[0].userData.hand.add(bagPivot);
     {
-        const geo = shapeHead(new THREE.SphereGeometry(HR * 1.004, 64, 48, 0, Math.PI, 0, Math.PI));
-        const p = geo.attributes.position, uv = geo.attributes.uv;
-        for (let i = 0; i < p.count; i++) uv.setXY(i, 0.5 + p.getX(i) / (2 * FW), 0.5 + p.getY(i) / (2 * FH));
-        const face = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
-        face.renderOrder = 2; head.add(face);
-    }
-    const ell = (x, y, rx, ry, rot = 0) => { fg.beginPath(); fg.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); };
-    const star = (x, y, r, rot) => {
-        fg.beginPath();
-        for (let i = 0; i < 8; i++) { const a = rot + i * Math.PI / 4, rr = i % 2 ? r * 0.4 : r; fg.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
-        fg.closePath(); fg.fill();
-    };
-    function drawEye(cx, cy, side, st) {
-        const g = fg, w = 50, h = 58, m = st.mood;
-        g.save(); g.translate(cx, cy); if (side < 0) g.scale(-1, 1);   // วาดตาขวาแล้วกลับด้านเป็นตาซ้าย (หางตาอยู่ด้าน +x)
-        g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = '#2b0f22';
-        if (m === 'happy' || st.blink < 0.3) {
-            g.lineWidth = 8; g.beginPath();
-            if (m === 'happy') { g.moveTo(-w * 0.9, 12); g.quadraticCurveTo(0, -h * 0.85, w * 0.95, 8); }
-            else { g.moveTo(-w * 0.95, 4); g.quadraticCurveTo(0, 18, w * 1.0, -6); g.moveTo(w * 0.95, -4); g.lineTo(w * 1.25, -16); }
-            g.stroke(); g.restore(); return;
-        }
-        const top = -h * st.blink, bot = h * 0.8;
-        g.beginPath(); g.moveTo(-w, -h * 0.1);
-        g.bezierCurveTo(-w * 0.6, top * 1.15, w * 0.6, top * 1.1, w * 1.05, -h * 0.35);
-        g.bezierCurveTo(w * 0.95, bot * 0.75, -w * 0.55, bot * 1.05, -w, -h * 0.1); g.closePath();
-        g.fillStyle = '#fffafc'; g.fill();
-        g.save(); g.clip();
-        const sc = m === 'panic' ? 0.5 : 1, iw = w * 0.7 * sc, ih = h * 0.95 * sc;
-        const ix = st.gx * 10 * side + (m === 'panic' ? Math.sin(st.t * 40) * 2 : 0), iy = 6 - st.gy * 8;
-        const gr = g.createLinearGradient(0, iy - ih, 0, iy + ih);
-        gr.addColorStop(0, '#24093c'); gr.addColorStop(0.5, '#6a3aa2'); gr.addColorStop(1, '#d2acf5');
-        g.fillStyle = gr; ell(ix, iy, iw, ih); g.fill(); g.lineWidth = 3; g.strokeStyle = '#1d0830'; g.stroke();
-        g.fillStyle = 'rgba(20,6,34,0.9)'; ell(ix, iy - 4 * sc, iw * 0.45, ih * 0.5); g.fill();
-        g.fillStyle = 'rgba(70,25,95,0.4)'; g.fillRect(-w * 1.3, top - 14, w * 2.6, 26);
-        g.fillStyle = '#ffffff';
-        if (m === 'moon') { g.fillStyle = '#fff6c8'; star(ix - iw * 0.2, iy - ih * 0.25, 20, st.t * 2); g.fillStyle = '#fff'; star(ix + iw * 0.35, iy + ih * 0.4, 8, -st.t * 3); }
-        else { ell(ix - iw * 0.38, iy - ih * 0.42, 10, 13, -0.3); g.fill(); ell(ix + iw * 0.32, iy + ih * 0.38, 5, 5); g.fill(); }
-        if (m === 'sad') {
-            g.fillStyle = 'rgba(160,215,255,0.45)'; g.fillRect(-w * 1.3, bot * 0.25, w * 2.6, bot);
-            g.strokeStyle = 'rgba(255,255,255,0.9)'; g.lineWidth = 3; g.beginPath(); g.moveTo(-w * 0.6, bot * 0.35);
-            for (let k = 0; k < 6; k++) g.quadraticCurveTo(-w * 0.5 + k * w * 0.22, bot * (k % 2 ? 0.25 : 0.45), -w * 0.4 + k * w * 0.22, bot * 0.35);
-            g.stroke();
-        }
-        g.restore();
-        g.strokeStyle = '#2b0f22';
-        g.lineWidth = 9; g.beginPath(); g.moveTo(-w * 1.02, -h * 0.08);
-        g.bezierCurveTo(-w * 0.6, top * 1.2, w * 0.6, top * 1.14, w * 1.1, -h * 0.38); g.stroke();
-        g.lineWidth = 6; g.beginPath(); g.moveTo(w * 1.0, -h * 0.36); g.lineTo(w * 1.32, -h * 0.62); g.moveTo(w * 1.02, -h * 0.24); g.lineTo(w * 1.32, -h * 0.28); g.stroke();
-        g.lineWidth = 2.5; g.beginPath(); g.moveTo(w * 0.15, bot * 0.98); g.quadraticCurveTo(w * 0.7, bot * 0.8, w * 0.98, bot * 0.3); g.stroke();
-        g.restore();
-    }
-    function drawFace(st) {
-        const g = fg, m = st.mood;
-        g.clearRect(0, 0, FS, FS);
-        g.lineCap = 'round'; g.lineJoin = 'round';
-        if (m === 'panic') {   // หน้าซีด + เส้นเครียดแบบการ์ตูน
-            const gr = g.createLinearGradient(0, fy(0.32), 0, fy(-0.02));
-            gr.addColorStop(0, 'rgba(80,100,200,0.5)'); gr.addColorStop(1, 'rgba(80,100,200,0)');
-            g.fillStyle = gr; g.fillRect(0, 0, FS, fy(-0.02));
-            g.strokeStyle = 'rgba(60,70,160,0.65)'; g.lineWidth = 3;
-            for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(fx(i * 0.045), fy(0.26)); g.lineTo(fx(i * 0.045), fy(0.1)); g.stroke(); }
-        }
-        // แก้มแดง + ขีดเฉียง
-        const blush = m === 'happy' || m === 'moon' ? 0.85 : m === 'panic' ? 0.2 : 0.55;
-        [-1, 1].forEach(s => {
-            const cx = fx(s * 0.2), cy = fy(-0.15);
-            const gr = g.createRadialGradient(cx, cy, 2, cx, cy, 44);
-            gr.addColorStop(0, `rgba(255,120,150,${blush})`); gr.addColorStop(1, 'rgba(255,120,150,0)');
-            g.fillStyle = gr; ell(cx, cy, 46, 24); g.fill();
-            g.strokeStyle = `rgba(220,70,110,${blush})`; g.lineWidth = 3;
-            for (let k = -1; k <= 1; k++) { g.beginPath(); g.moveTo(cx + k * 14 + 6, cy - 9); g.lineTo(cx + k * 14 - 3, cy + 9); g.stroke(); }
+        const sack = outline(new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 18), bagMat), 0.018); sack.scale.set(1, 0.95, 0.85); sack.position.y = -0.5;
+        const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.14, 0.14, 14), bagMat); neck.position.y = -0.17;
+        const tie = outline(new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.03, 8, 20), bagDark), 0.01); tie.rotation.x = Math.PI / 2; tie.position.y = -0.14;
+        const tuft = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.06, 0.13, 14), bagMat), 0.014); tuft.position.y = -0.04;
+        const symTex = canvasTexture(128, 128, g => {
+            g.font = '900 96px Inter, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+            g.fillStyle = '#4a321e'; g.fillRect(48, 10, 10, 108); g.fillRect(70, 10, 10, 108); g.fillText('B', 66, 68);
         });
-        // ตา + คิ้ว
-        [-1, 1].forEach(s => drawEye(fx(s * 0.15), fy(-0.02), s, st));
-        const browA = m === 'sad' ? 0.3 : m === 'panic' ? 0.42 : m === 'happy' || m === 'moon' ? -0.12 : 0.05;
-        const browY = m === 'panic' ? 0.115 : m === 'happy' || m === 'moon' ? 0.105 : 0.095;
-        [-1, 1].forEach(s => {
-            g.save(); g.translate(fx(s * 0.15), fy(browY)); if (s < 0) g.scale(-1, 1); g.rotate(browA);
-            g.strokeStyle = '#c4507f'; g.lineWidth = 5; g.beginPath(); g.moveTo(-34, 4); g.quadraticCurveTo(0, -8, 36, 2); g.stroke();
-            g.restore();
-        });
-        // จมูก
-        g.strokeStyle = 'rgba(205,120,110,0.9)'; g.lineWidth = 3; g.beginPath(); g.moveTo(fx(0.004), fy(-0.13)); g.lineTo(fx(-0.006), fy(-0.145)); g.stroke();
-        // ปาก
-        const mx = fx(0), my = fy(-0.26);
-        g.strokeStyle = '#8a2a3a'; g.lineWidth = 4;
-        if (m === 'neutral') {
-            g.beginPath(); g.moveTo(mx - 9, my); g.quadraticCurveTo(mx, my - 3, mx + 9, my); g.stroke();
-            g.fillStyle = 'rgba(200,90,110,0.5)'; ell(mx, my + 5, 6, 3); g.fill();
-        } else if (m === 'happy' || m === 'moon') {
-            const W = m === 'moon' ? 30 : 20, H = m === 'moon' ? 28 : 17;
-            g.fillStyle = '#9b2c3f'; g.beginPath(); g.moveTo(mx - W, my - 6); g.quadraticCurveTo(mx, my - 2, mx + W, my - 6); g.quadraticCurveTo(mx, my + H * 1.6, mx - W, my - 6); g.fill();
-            g.fillStyle = '#ff8a9c'; ell(mx, my + H * 0.6, W * 0.55, H * 0.35); g.fill();
-            if (m === 'moon') { g.fillStyle = '#fff'; g.fillRect(mx - W * 0.7, my - 6, W * 1.4, 6); }
-            g.stroke();
-        } else if (m === 'sad') {
-            g.beginPath(); g.moveTo(mx - 16, my + 6);
-            g.quadraticCurveTo(mx - 8, my - 6, mx, my + 1); g.quadraticCurveTo(mx + 8, my - 6, mx + 16, my + 6); g.stroke();
-        } else {
-            g.fillStyle = '#7a1a2c'; ell(mx, my + 6, 15, 21 + Math.sin(st.t * 18) * 2); g.fill(); g.stroke();
-            g.fillStyle = '#ff8a9c'; ell(mx, my + 18, 9, 6); g.fill();
-        }
-        // หยดเหงื่อการ์ตูน
-        if (m === 'neutral' || m === 'panic') {
-            const sx = fx(0.29), sy = fy(m === 'panic' ? 0.12 : 0.02);
-            g.fillStyle = 'rgba(170,220,255,0.95)'; g.strokeStyle = '#4f8fc4'; g.lineWidth = 2.5;
-            g.beginPath(); g.moveTo(sx, sy - 22); g.quadraticCurveTo(sx + 13, sy + 2, sx, sy + 10); g.quadraticCurveTo(sx - 13, sy + 2, sx, sy - 22); g.fill(); g.stroke();
-            g.fillStyle = '#fff'; ell(sx - 3, sy + 1, 2.5, 4); g.fill();
-        }
-        // น้ำตาไหลเป็นสาย
-        if (m === 'sad') {
-            g.strokeStyle = 'rgba(140,205,255,0.85)'; g.lineWidth = 7;
-            [-1, 1].forEach(s => {
-                const x0 = fx(s * 0.17), y0 = fy(-0.08);
-                g.setLineDash([16, 10]); g.lineDashOffset = -st.t * 40;
-                g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(x0 + s * 10, fy(-0.2), x0 + s * 2, fy(-0.36)); g.stroke();
-            });
-            g.setLineDash([]);
-        }
-        faceTex.needsUpdate = true;
+        const sym = new THREE.Mesh(new THREE.CircleGeometry(0.2, 24), new THREE.MeshBasicMaterial({ map: symTex, transparent: true, depthWrite: false }));
+        sym.position.set(0, -0.52, 0.29); sym.rotation.x = -0.1;
+        bagPivot.add(sack, neck, tie, tuft, sym);
     }
 
-    // ---- ผมชมพูยาว: ปอยผมเรียวปลายแหลม (สร้าง geometry เอง) ----
-    function strand(pts, r0, r1, flat = 0.4, seg = 22, rad = 8) {
-        const curve = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)));
-        const pos = [], idx = [], T = new THREE.Vector3(), out = new THREE.Vector3(), sd = new THREE.Vector3(), up = new THREE.Vector3();
-        for (let i = 0; i <= seg; i++) {
-            const t = i / seg, p = curve.getPointAt(t); curve.getTangentAt(t, T);
-            out.set(p.x, Math.max(p.y, 0), p.z).normalize();
-            sd.crossVectors(T, out).normalize(); up.crossVectors(sd, T).normalize();
-            const r = lerp(r0, r1, Math.pow(t, 1.3));
-            for (let j = 0; j < rad; j++) {
-                const a = j / rad * Math.PI * 2, c = Math.cos(a) * r, s = Math.sin(a) * r * flat;
-                pos.push(p.x + sd.x * c + up.x * s, p.y + sd.y * c + up.y * s, p.z + sd.z * c + up.z * s);
-            }
-        }
-        for (let i = 0; i < seg; i++) for (let j = 0; j < rad; j++) {
-            const a = i * rad + j, b = i * rad + (j + 1) % rad, c = a + rad, d = b + rad;
-            idx.push(a, c, b, b, c, d);
-        }
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
-        return outline(new THREE.Mesh(geo, hair), 0.005, hairLine);
-    }
-    const scalpR = HR * 1.04;
-    const cap = new THREE.Mesh(new THREE.SphereGeometry(scalpR, 48, 24, 0, Math.PI * 2, 0, Math.PI * 0.4), hair); cap.scale.x = 0.92; head.add(cap);
-    const backShell = new THREE.Mesh(new THREE.SphereGeometry(scalpR, 48, 24, Math.PI, Math.PI, 0, Math.PI * 0.78), hair); backShell.scale.x = 0.92; head.add(backShell);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.338, 0.011, 6, 48, Math.PI * 0.8), new THREE.MeshBasicMaterial({ color: 0xffe0ef }));
-    ring.rotation.x = Math.PI / 2; ring.rotation.z = Math.PI * 0.1; ring.position.y = 0.285; ring.scale.x = 0.92; head.add(ring);   // วงแสงบนผม
-    const faceZ = (x, y) => Math.sqrt(Math.max(0, HR * HR - (x / 0.92) ** 2 - y * y));
-    [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1].forEach(u => {   // หน้าม้า
-        const len = u === 0 ? 0.12 : Math.abs(u) > 0.9 ? 0.14 : 0.06 + Math.abs(u) * 0.03;
-        const tx = u * 0.25 - u * 0.03, ty = 0.08 - len, mx = u * 0.2, my = 0.27;
-        head.add(strand([[u * 0.1, 0.42, 0.1], [mx, my, faceZ(mx, my) + 0.05], [tx, ty, faceZ(tx, ty) + 0.025]], 0.09, 0.004, 0.35));
+    // ---- ขา + รองเท้าผ้าใบหุ้มข้อสีเหลือง ----
+    const legs = [-0.22, 0.2].map(x => {
+        const g = new THREE.Group(); g.position.set(x, -0.82, 0);
+        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.42, 8), ink); leg.position.y = -0.21;
+        const shoe = new THREE.Group(); shoe.position.set(0, -0.48, 0.06);
+        const upper = outline(new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.18, 6, 14), shoeMat), 0.016); upper.rotation.x = Math.PI / 2; upper.scale.set(1, 1, 0.95); upper.position.set(0, 0.02, 0.03);
+        const collar = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.1, 0.14, 14), shoeMat), 0.014); collar.position.set(0, 0.1, -0.04);
+        const sole = outline(new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.06, 0.42), soleMat), 0.012); sole.position.set(0, -0.08, 0.04);
+        const toe = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), soleMat); toe.rotation.x = Math.PI / 2; toe.position.set(0, -0.02, 0.16); toe.scale.set(1.05, 0.9, 0.6);
+        for (let k = 0; k < 3; k++) { const lace = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.015, 0.025), soleMat); lace.position.set(0, 0.11 - k * 0.025, 0.04 + k * 0.05); lace.rotation.x = -0.5; shoe.add(lace); }
+        shoe.add(upper, collar, sole, toe); g.add(leg, shoe); body.add(g); return g;
     });
-    const sideLocks = new THREE.Group(); head.add(sideLocks);
-    [-1, 1].forEach(s => {   // ปอยผมข้างแก้ม ยาวถึงเอว
-        sideLocks.add(strand([[s * 0.3, 0.3, 0.22], [s * 0.37, 0.0, 0.2], [s * 0.36, -0.42, 0.17], [s * 0.39, -0.9, 0.13], [s * 0.43, -1.28, 0.09]], 0.11, 0.01, 0.45, 28));
-        sideLocks.add(strand([[s * 0.34, 0.25, 0.12], [s * 0.42, -0.1, 0.06], [s * 0.45, -0.6, 0.0], [s * 0.5, -1.15, -0.04]], 0.11, 0.012, 0.45, 26));
-    });
-    const hairBack = new THREE.Group(); head.add(hairBack);
-    const massGeo = new THREE.CylinderGeometry(0.4, 0.5, 1.45, 40, 1, true, Math.PI / 2, Math.PI);   // มวลผมด้านหลัง (ให้ผมดูหนา)
-    const mass = new THREE.Mesh(massGeo, hair); mass.position.y = -0.62; mass.scale.z = 0.78; hairBack.add(mass);
-    for (let i = 0; i <= 10; i++) {   // ปอยผมด้านหลัง ยาวถึงสะโพก
-        const phi = Math.PI * (0.5 + i / 10), sx = Math.sin(phi), sz = Math.cos(phi);
-        const L = 1.38 + Math.sin(i * 1.7) * 0.1;
-        hairBack.add(strand([[sx * 0.36, 0.3, sz * 0.36], [sx * 0.46, -0.15, sz * 0.46], [sx * 0.5, -0.7, sz * 0.42], [sx * 0.55 + Math.sin(i) * 0.03, -L, sz * 0.42]], 0.17, 0.025, 0.45, 26));
-    }
-
-    // ก้าน + ใบส้มบนหัว (เสาอากาศอารมณ์: ดุ๊กดิ๊กตอนเขียว เหี่ยวตอนแดง)
-    const stem = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.028, 0.1, 10), toon(0x6b4a26)), 0.006);
-    stem.position.y = scalpR + 0.04; head.add(stem);
-    const leafPivot = new THREE.Group(); leafPivot.position.y = scalpR + 0.08; leafPivot.rotation.x = 0.95; head.add(leafPivot);
-    const leafGeo = new THREE.SphereGeometry(0.15, 20, 12);
-    const leafVeinMat = new THREE.MeshBasicMaterial({ color: 0x2a7a35 });
-    [[0.15, 0, 0.35, 1, 0], [-0.1, 0.01, -0.5, 0.7, 0.6]].forEach(([x, y, rz, sc, ry]) => {
-        const g = new THREE.Group(); g.position.set(x, y, 0); g.rotation.set(0, ry, rz); g.scale.setScalar(sc);
-        const leaf = outline(new THREE.Mesh(leafGeo, leafMat), 0.01); leaf.scale.set(1, 0.14, 0.48);
-        const vein = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.01, 0.01), leafVeinMat); vein.position.y = 0.022;
-        g.add(leaf, vein); leafPivot.add(g);
-    });
-
-    // กิ๊บลูกส้ม (เอกลักษณ์ส้มจี๊ด) + กิ๊บเหรียญ ₿
-    const clip = new THREE.Group();
-    const clipLeaf = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 8), leafMat); clipLeaf.scale.set(1, 0.3, 0.55); clipLeaf.position.set(0.04, 0.05, 0); clipLeaf.rotation.z = 0.5;
-    clip.add(outline(new THREE.Mesh(new THREE.SphereGeometry(0.055, 20, 14), orangeMat), 0.008), clipLeaf);
-    clip.position.set(0.3, 0.26, 0.26); head.add(clip);
-    const coinClipGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.02, 28); coinClipGeo.rotateX(Math.PI / 2);
-    const coinClip = new THREE.Mesh(coinClipGeo, [gold, faceBack, gold]); coinClip.position.set(-0.3, 0.26, 0.27); coinClip.rotation.y = -0.6; head.add(coinClip);
+    const BOT_BASE_Y = GROUND + 1.41 * S_BOT;
 
     // เหงื่อกระเด็น (ตอน Panic)
-    const dropGeo = new THREE.SphereGeometry(0.04, 14, 10);
+    const dropGeo = new THREE.SphereGeometry(0.05, 14, 10);
     const sweats = [0, 1, 2].map(i => {
-        const d = new THREE.Mesh(dropGeo, dropMat); d.scale.set(0.9, 1.3, 0.9); d.visible = false; d.userData = { t: i / 3, side: i % 2 ? 1 : -1 }; head.add(d); return d;
+        const d = new THREE.Mesh(dropGeo, dropMat); d.scale.set(0.9, 1.3, 0.9); d.visible = false; d.userData = { t: i / 3, side: i % 2 ? 1 : -1 }; bGroup.add(d); return d;
     });
     let lastFaceKey = '', faceTimer = 0;
 
@@ -1641,7 +1469,7 @@ function initMascot() {
     shadow.rotation.x = -Math.PI / 2; shadow.position.y = GROUND; scene.add(shadow);
 
     // กองเหรียญ = ความคืบหน้าเป้าหมาย (10% ต่อเหรียญ)
-    const stack = new THREE.Group(); stack.position.set(1.55, GROUND, -0.25); scene.add(stack);
+    const stack = new THREE.Group(); stack.position.set(1.75, GROUND, -0.25); scene.add(stack);
     const stackShadow = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.8), shadowMat); stackShadow.rotation.x = -Math.PI / 2; stackShadow.position.y = 0.002; stackShadow.visible = false; stack.add(stackShadow);
     const stackGeo = new THREE.CylinderGeometry(0.34, 0.34, 0.08, 48);
     const stackFace = new THREE.MeshStandardMaterial({ map: coinFaceTexture(true), metalness: 0.55, roughness: 0.38 });
@@ -1717,7 +1545,7 @@ function initMascot() {
     }
 
     // ---------- สถานะ & การเปลี่ยนอารมณ์ ----------
-    const cur = { bounce: 0.03, speed: 1.6, arms: 0.1, back: 0, wave: 0, droop: 0, shake: 0, cloud: 0 };
+    const cur = { bounce: 0.03, speed: 1.6, wiggle: 0.05, step: 0, armR: 0.3, armL: 0.25, wave: 0, droop: 0, shake: 0, cloud: 0 };
     let mood = null, target = MOODS.neutral, moodT = 0, phase = 0;
     const rimTarget = new THREE.Color(target.rim), cloudTarget = new THREE.Color(0x8e98a8);
     function setMood(key) {
@@ -1770,7 +1598,7 @@ function initMascot() {
     function update(dt, t) {
         moodT += dt;
         const k = damp(dt, 5);
-        for (const p of ['bounce', 'speed', 'arms', 'wave', 'back']) cur[p] = lerp(cur[p], target[p] || 0, k);
+        for (const p of ['bounce', 'speed', 'wiggle', 'step', 'armR', 'armL', 'wave']) cur[p] = lerp(cur[p], target[p] || 0, k);
         cur.droop = lerp(cur.droop, target.droop || 0, k);
         cur.shake = lerp(cur.shake, target.shake || 0, k);
         cur.cloud = lerp(cur.cloud, target.cloud ? 1 : 0, damp(dt, 4));
@@ -1781,7 +1609,7 @@ function initMascot() {
         gaze.lerp(gazeTarget, damp(dt, 6));
 
         // ตำแหน่ง: ขยับไปซ้ายเมื่อมีกองเหรียญ
-        const baseX = stackCoins.length ? -0.15 : 0.2;
+        const baseX = stackCoins.length ? 0.05 : 0.3;
         bot.position.x = lerp(bot.position.x, baseX, damp(dt, 3));
         const hop = Math.abs(Math.sin(phase)) * cur.bounce;
         let jumpY = 0, spin = 0;
@@ -1796,46 +1624,35 @@ function initMascot() {
         const shake = cur.shake * motion;
         bot.position.x += shake ? (Math.random() - 0.5) * shake : 0;
 
-        body.rotation.y = gaze.x * 0.22 + Math.sin(t * 0.7) * 0.1 * motion + spin;
-        body.rotation.x = cur.droop * 0.3;
-        body.rotation.z = Math.sin(phase * 0.5) * cur.bounce * 0.4;
-        const squash = 1 - hop * 0.15;
-        body.scale.set(1 + hop * 0.05, squash, 1);
+        // ดุ๊กดิ๊ก: โยกซ้ายขวา + เด้ง + ย่ำเท้า
+        const sway = Math.sin(phase) * cur.wiggle;
+        body.rotation.y = gaze.x * 0.3 + Math.sin(t * 0.7) * 0.12 * motion + spin;
+        body.rotation.z = sway;
+        body.rotation.x = 0;
+        const squash = 1 - hop * 0.18;
+        body.scale.set(1 + hop * 0.1, squash, 1);
+        bGroup.rotation.z = lerp(bGroup.rotation.z, -0.2 + (mood === 'sad' ? -0.12 : 0), damp(dt, 4));
+        bGroup.rotation.x = lerp(bGroup.rotation.x, mood === 'sad' ? 0.22 : -gaze.y * 0.1, damp(dt, 4));
+        legs.forEach((l, i) => { l.position.y = -0.82 + Math.max(0, Math.sin(phase + i * Math.PI)) * cur.step; l.rotation.z = -sway * 0.8; });
 
-        // หัว: เอียงคอแบบอนิเมะ + ก้มตอนเศร้า + มองตาม
-        head.rotation.x = cur.droop * 1.6 - gaze.y * 0.12;
-        head.rotation.y = gaze.x * 0.3;
-        head.rotation.z = Math.sin(t * 0.9) * 0.05 * motion + (mood === 'neutral' ? 0.1 : 0);
-        hairBack.rotation.z = Math.sin(phase) * cur.bounce * 0.35;
-        hairBack.rotation.x = 0.04 + Math.abs(Math.sin(phase)) * cur.bounce * 0.4;
-        sideLocks.rotation.z = Math.sin(phase + 0.5) * cur.bounce * 0.25;
-        const leafDroop = mood === 'sad' ? -0.6 : mood === 'panic' ? -0.3 : 0;
-        leafPivot.rotation.z = lerp(leafPivot.rotation.z, leafDroop + Math.sin(phase * 2) * cur.bounce * 1.8 + (mood === 'panic' ? Math.sin(t * 30) * 0.12 : 0), damp(dt, 6));
+        // มงกุฎ: เด้งตาม / เบี้ยวตอนเศร้า / ประกายตอนพุ่ง
+        crown.rotation.z = lerp(crown.rotation.z, mood === 'sad' ? 0.45 : mood === 'panic' ? 0.25 + Math.sin(t * 30) * 0.08 : 0.12 + Math.sin(phase * 2) * cur.bounce * 0.6, damp(dt, 6));
+        crown.position.y = lerp(crown.position.y, mood === 'sad' ? 0.98 : 1.06 + hop * 0.4, damp(dt, 8));
+        sparkle.material.opacity = mood === 'moon' || mood === 'happy' ? Math.max(0, Math.sin(t * 4)) : 0;
+        sparkle.scale.setScalar(0.6 + Math.max(0, Math.sin(t * 4)) * 0.8);
+        sparkle.lookAt(camera.position);
 
-        // หน้า: กะพริบ + มองตาม (วาด canvas ใหม่เฉพาะตอนมีอะไรเปลี่ยน)
-        blinkAt -= dt;
-        if (blinkAt <= 0 && blinkT < 0) { blinkT = 0; blinkAt = 2.5 + Math.random() * 3; }
-        let blink = 1;
-        if (blinkT >= 0) { blinkT += dt / 0.16; blink = Math.abs(1 - 2 * Math.min(blinkT, 1)); if (blinkT >= 1) blinkT = -1; }
-        const lid = blink < 0.4 ? 0 : (mood === 'neutral' ? 0.82 : mood === 'panic' ? 1.12 : 1);
-        const faceKey = `${mood}|${Math.round(gaze.x * 8)}|${Math.round(gaze.y * 8)}|${lid}`;
-        faceTimer -= dt;
-        if (faceKey !== lastFaceKey || ((mood === 'sad' || mood === 'panic' || mood === 'moon') && faceTimer <= 0)) {
-            lastFaceKey = faceKey; faceTimer = 0.08;
-            drawFace({ mood, blink: lid, gx: gaze.x, gy: gaze.y, t });
-        }
-
-        // แขน: ยกขึ้น + โบกมือ / ไขว้หลังตอนนิ่ง
+        // แขน: ขวาโบกมือ / ซ้ายถือถุงเงิน
         const wave = Math.sin(t * 9 * motion) * cur.wave;
-        arms.forEach(a => a.rotation.x = cur.back);
-        arms[0].rotation.z = -(cur.arms + (mood === 'moon' ? wave * 0.6 : 0)) - (mood === 'panic' ? Math.sin(t * 22) * 0.1 : 0);
-        arms[1].rotation.z = cur.arms + wave + (mood === 'panic' ? Math.sin(t * 22 + 1) * 0.1 : 0);
+        arms[1].rotation.z = cur.armR + wave + (mood === 'panic' ? Math.sin(t * 22) * 0.12 : 0);
+        arms[0].rotation.z = -(cur.armL + (mood === 'moon' ? Math.sin(t * 9) * 0.25 : 0)) - (mood === 'panic' ? Math.sin(t * 22 + 1) * 0.12 : 0);
+        bagPivot.rotation.z = lerp(bagPivot.rotation.z, -arms[0].rotation.z * 0.9 + Math.sin(phase + 0.6) * cur.bounce * 1.6, damp(dt, 5));
 
         sweats.forEach(d => {
             if (!d.visible) return;
             d.userData.t = (d.userData.t + dt * 1.3) % 1;
             const u = d.userData.t, s = d.userData.side;
-            d.position.set(s * (0.4 + u * 0.3), 0.25 + Math.sin(u * Math.PI) * 0.2 - u * 0.25, 0.12);
+            d.position.set(s * (0.55 + u * 0.4), 0.7 + Math.sin(u * Math.PI) * 0.25 - u * 0.3, 0.2);
         });
 
         // เมฆ
