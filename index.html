@@ -15,6 +15,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- three.js (ES module) สำหรับมาสคอต 3D และฉากพื้นหลัง -->
+    <script type="importmap">
+        { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" } }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -137,9 +141,30 @@
         .dark-swal-confirm { background: linear-gradient(135deg, #E2C063, #C8A145) !important; color: #0B0E14 !important; font-weight: bold !important; border-radius: 8px !important; }
         .dark-swal-cancel { background: rgba(255,255,255,0.1) !important; color: white !important; border-radius: 8px !important; }
         .swal2-input.dark-swal-input { background: rgba(0,0,0,0.3) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
+
+        /* 3D background (three.js) อยู่หลังเนื้อหาทั้งหมด */
+        #bg3d { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
+        #bg3d.ready { opacity: 1; }
+
+        /* Mascot mood card */
+        .mood-stage { background: radial-gradient(ellipse at 50% 70%, var(--mood-glow, rgba(226,192,99,0.18)), transparent 65%); transition: background 0.8s ease; }
+        #mascotCanvas { opacity: 0; transition: opacity 0.8s ease; touch-action: pan-y; cursor: pointer; }
+        .mascot-ready #mascotCanvas { opacity: 1; }
+        .mascot-ready #mascotFallback { display: none; }
+        #mascotFallback { animation: floaty 2.4s ease-in-out infinite; }
+        @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .speech-bubble { position: relative; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; }
+        .speech-bubble::before { content: ''; position: absolute; left: 22px; top: -7px; width: 12px; height: 12px; background: inherit; border-left: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(255,255,255,0.1); transform: rotate(45deg); backdrop-filter: blur(16px); }
+        @media (min-width: 768px) { .speech-bubble::before { left: -7px; top: 22px; transform: rotate(-45deg); } }
+        .speech-pop { animation: speechPop 0.35s ease-out; }
+        @keyframes speechPop { 0% { transform: scale(0.92); opacity: 0.3; } 100% { transform: scale(1); opacity: 1; } }
+        .mood-meter { background: linear-gradient(90deg, #FF4D4D 0%, #ff9a4d 30%, #9ca3af 50%, #9be15d 70%, #F5D061 100%); }
+        #moodMarker { transition: left 0.8s cubic-bezier(.2,.9,.3,1.2); }
+        @media (prefers-reduced-motion: reduce) { #mascotFallback { animation: none; } }
     </style>
 </head>
 <body class="min-h-[100dvh] flex justify-center pb-20 md:pb-6">
+    <canvas id="bg3d" aria-hidden="true"></canvas>
     <div class="w-full max-w-4xl px-4 md:px-6 safe-padding w-full overflow-hidden">
         
         <!-- HEADER SECTION (Responsive Fix) -->
@@ -235,6 +260,42 @@
                                 <p class="text-[9px] md:text-[10px] text-gray-500 tracking-[0.15em] uppercase mb-1">Return</p>
                                 <div id="unrealizedProfitPercent" class="font-num text-xs md:text-sm font-bold px-2.5 py-1 rounded-md border backdrop-blur-sm inline-block">0.00%</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3D MASCOT MOOD CARD (three.js) -->
+            <div id="moodCard" class="glass-card gold-border overflow-hidden">
+                <div class="grid grid-cols-1 md:grid-cols-5">
+                    <div id="mascotStage" class="mood-stage md:col-span-3 relative h-[300px] md:h-[380px]">
+                        <canvas id="mascotCanvas" class="absolute inset-0 w-full h-full" aria-label="มาสคอต 3D ส้มจี๊ด แตะเพื่อเล่นด้วย"></canvas>
+                        <div id="mascotFallback" class="absolute inset-0 flex items-center justify-center text-7xl pointer-events-none select-none">🍊</div>
+                        <div class="absolute top-3 left-3 flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-full px-3 py-1 backdrop-blur-md text-[10px] font-num tracking-widest uppercase text-gray-300 pointer-events-none">
+                            <span id="moodEmoji">🍊</span> <span id="moodLabel">Loading</span>
+                        </div>
+                        <button id="moodDemoBtn" type="button" title="ลองดูทุกอารมณ์" class="absolute top-3 right-3 h-7 px-2.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all text-[10px] flex items-center gap-1">
+                            <i class="fas fa-masks-theater"></i> <span id="moodDemoText">Preview</span>
+                        </button>
+                        <p class="absolute bottom-2 left-0 right-0 text-center text-[9px] text-gray-600 tracking-widest uppercase pointer-events-none">แตะส้มจี๊ดเพื่อแหย่เล่น</p>
+                    </div>
+                    <div class="md:col-span-2 p-5 md:pl-2 flex flex-col justify-center gap-4">
+                        <div>
+                            <h3 class="text-xs tracking-[0.15em] text-gray-400 uppercase flex items-center gap-2 mb-2">
+                                <span class="text-sm leading-none">🍊</span> ส้มจี๊ด Mood
+                            </h3>
+                            <p id="moodTitle" class="text-xl md:text-2xl font-bold text-white">กำลังเช็คกราฟ...</p>
+                        </div>
+                        <div id="moodSpeech" class="speech-bubble px-4 py-3 text-sm text-gray-200 leading-relaxed">รอแป๊บค่ะ ส้มจี๊ดขอดูราคาก่อนว่าวันนี้ต้องยิ้มหรือร้องไห้</div>
+                        <div>
+                            <div class="flex justify-between items-end mb-1.5">
+                                <span class="text-[10px] text-gray-500 uppercase tracking-[0.15em]">BTC 24H</span>
+                                <span id="moodChange" class="font-num text-sm font-bold text-gray-300">--</span>
+                            </div>
+                            <div class="mood-meter relative h-1.5 rounded-full">
+                                <div id="moodMarker" class="absolute -top-1 w-3.5 h-3.5 -ml-[7px] rounded-full bg-white border-2 border-dark shadow-[0_0_8px_rgba(255,255,255,0.6)]" style="left:50%"></div>
+                            </div>
+                            <div class="flex justify-between text-[9px] text-gray-600 mt-1.5 font-num"><span>-10%</span><span>0</span><span>+10%</span></div>
                         </div>
                     </div>
                 </div>
@@ -752,7 +813,91 @@ function renderSummary() {
     ppEl.textContent = `${s.unrealizedProfit >= 0 ? '+' : ''}${s.unrealizedProfitPercent.toFixed(2)}%`;
     pEl.className = `font-num font-bold text-lg md:text-xl ${s.unrealizedProfit >= 0 ? 'text-success' : 'text-danger'}`;
     ppEl.className = `${s.unrealizedProfit >= 0 ? 'bg-success/10 border-success/30 text-success' : 'bg-danger/10 border-danger/30 text-danger'} font-num text-xs md:text-sm font-bold px-2.5 py-1 rounded-md border backdrop-blur-sm inline-block`;
+    renderMood();
 }
+
+// --- 3D Mascot Mood (ส้มจี๊ด) ---
+// อารมณ์ของมาสคอตอิงจาก % เปลี่ยนแปลง 24 ชม. ของ BTC ส่วนฉาก 3D อยู่ใน module script ด้านล่าง
+const MOOD_ORDER = ['moon', 'happy', 'neutral', 'sad', 'panic'];
+const MOOD_INFO = {
+    moon:    { emoji: '🚀', label: 'To the Moon', title: 'ขึ้นแรงจนหัวหมุน!', glow: 'rgba(245,208,97,0.30)', color: 'text-gold-400',
+               lines: ['ขึ้นแรงขนาดนี้ อย่าเพิ่งเขียนใบลาออกนะคะเบียร์ 🚀', 'กราฟเขียวจนตาลาย ส้มจี๊ดขอใส่แว่นกันแดดแป๊บค่ะ 😎', 'วันนี้ใครๆ ก็เป็นเซียนค่ะ... เดี๋ยวก็รู้ว่าใครแค่ฟลุ๊ค', 'ดอยเก่ายังไม่ทันลง ดอยใหม่ก็มาแล้วค่ะ'] },
+    happy:   { emoji: '😊', label: 'Bullish', title: 'เขียวกำลังดี ยิ้มได้', glow: 'rgba(76,175,80,0.22)', color: 'text-success',
+               lines: ['เขียวนิดๆ พอให้ยิ้มได้ แต่อย่าเพิ่งไปอวดใครนะคะ', 'DCA ต่อไปค่ะ อย่าเพิ่งเหลิง', 'พอร์ตยิ้ม เจ้าของพอร์ตก็ยิ้ม แต่เงินเดือนยังเท่าเดิมนะคะ', 'ขึ้นแค่นี้อย่าเพิ่งซื้อไล่ราคานะคะ ใจเย็นๆ'] },
+    neutral: { emoji: '😐', label: 'Sideways', title: 'นิ่ง... นิ่งมาก', glow: 'rgba(156,163,175,0.16)', color: 'text-gray-300',
+               lines: ['นิ่งยิ่งกว่าเงินเดือนที่ขึ้นปีละครั้งอีกค่ะ', 'ไซด์เวย์แบบนี้ ไปทำงานจริงๆ บ้างเถอะค่ะ', 'ไม่ขึ้นไม่ลง เหมือนชีวิตวัยทำงานเป๊ะเลยค่ะ 😐', 'ตลาดหลับ เราก็ DCA เงียบๆ ไปค่ะ'] },
+    sad:     { emoji: '🥲', label: 'Bearish', title: 'แดงนิดหน่อย อย่าเพิ่งร้อง', glow: 'rgba(96,165,250,0.18)', color: 'text-orange-400',
+               lines: ['แดงนิดหน่อย ถือว่าลดราคาให้ซื้อเพิ่มละกันค่ะ', 'อย่าเพิ่งร้องค่ะ... เก็บน้ำตาไว้ตอนลง 50% ทีเดียว 🥲', 'DCA มีไว้สำหรับวันแบบนี้แหละค่ะ เลิกเปิดดูทุกห้านาทีได้แล้ว', 'ลงแค่นี้ไม่ตายหรอกค่ะ แต่ใจส้มจี๊ดเปรี้ยวจี๊ดเลย'] },
+    panic:   { emoji: '😱', label: 'Panic', title: 'ดอยถล่ม! ตั้งสติก่อน', glow: 'rgba(255,77,77,0.28)', color: 'text-danger',
+               lines: ['ดอยถล่มค่ะ! ใครบอกว่าใจเพชร ออกมาคุยกันหน่อย 😱', 'ปิดแอปแล้วไปนอนเถอะค่ะ เชื่อส้มจี๊ด', 'คนกล้าซื้อตอนนี้คือเศรษฐีในอนาคตค่ะ... หรือไม่ก็คนดอยรุ่นใหม่', 'อย่ากดขายตอนตกใจนะคะ เดี๋ยวส้มจี๊ดหัวเราะใส่'] }
+};
+let moodPreview = null, moodPreviewTimer = null, lastMoodKey = null, lastLineIdx = -1;
+
+function getMoodKey(change) {
+    if (!isFinite(change)) return 'neutral';
+    if (change >= 5) return 'moon';
+    if (change >= 1.5) return 'happy';
+    if (change <= -5) return 'panic';
+    if (change <= -1.5) return 'sad';
+    return 'neutral';
+}
+
+function pickLine(key) {
+    const lines = MOOD_INFO[key].lines;
+    let i = Math.floor(Math.random() * lines.length);
+    if (lines.length > 1 && i === lastLineIdx) i = (i + 1) % lines.length;
+    lastLineIdx = i;
+    return lines[i];
+}
+
+function setSpeech(text) {
+    const el = document.getElementById('moodSpeech');
+    el.textContent = text;
+    el.classList.remove('speech-pop'); void el.offsetWidth; el.classList.add('speech-pop');
+}
+
+function renderMood() {
+    const realChange = Number(btcPriceData.change);
+    const hasPrice = btcPriceData.price > 0 && isFinite(realChange);
+    const key = moodPreview || (hasPrice ? getMoodKey(realChange) : 'neutral');
+    const info = MOOD_INFO[key];
+
+    document.getElementById('moodEmoji').textContent = info.emoji;
+    document.getElementById('moodLabel').textContent = moodPreview ? `${info.label} · Preview` : info.label;
+    document.getElementById('moodTitle').textContent = info.title;
+    document.getElementById('mascotStage').style.setProperty('--mood-glow', info.glow);
+
+    const chEl = document.getElementById('moodChange');
+    chEl.textContent = hasPrice ? `${realChange >= 0 ? '+' : ''}${realChange.toFixed(2)}%` : '--';
+    chEl.className = `font-num text-sm font-bold ${hasPrice ? (realChange >= 0 ? 'text-success' : 'text-danger') : 'text-gray-300'}`;
+    const meterPos = hasPrice ? Math.max(0, Math.min(100, 50 + realChange * 5)) : 50;
+    document.getElementById('moodMarker').style.left = `${meterPos}%`;
+
+    if (key !== lastMoodKey) { lastMoodKey = key; setSpeech(pickLine(key)); }
+    pushMascotState({ mood: key });
+}
+
+// ส่งสถานะให้ฉาก 3D (module อาจโหลดเสร็จทีหลัง จึงเก็บค่าล่าสุดไว้ที่ window ด้วย)
+function pushMascotState(patch) {
+    window.__btcMascot = { ...(window.__btcMascot || {}), ...patch };
+    document.dispatchEvent(new CustomEvent('btc-mascot', { detail: window.__btcMascot }));
+}
+
+document.getElementById('moodDemoBtn').addEventListener('click', () => {
+    const cur = moodPreview || lastMoodKey || 'neutral';
+    moodPreview = MOOD_ORDER[(MOOD_ORDER.indexOf(cur) + 1) % MOOD_ORDER.length];
+    document.getElementById('moodDemoText').textContent = 'Live in 8s';
+    clearTimeout(moodPreviewTimer);
+    moodPreviewTimer = setTimeout(() => {
+        moodPreview = null;
+        document.getElementById('moodDemoText').textContent = 'Preview';
+        renderMood();
+    }, 8000);
+    renderMood();
+});
+
+// แตะมาสคอต -> เปลี่ยนคำพูด (ตัวกระโดดจัดการใน module 3D)
+document.addEventListener('mascot-poke', () => { if (lastMoodKey) setSpeech(pickLine(lastMoodKey)); });
 
 // --- Goal & Badges ---
 function renderGoal() {
@@ -760,6 +905,7 @@ function renderGoal() {
     const percent = btcGoal > 0 ? (s.totalBTC / btcGoal) * 100 : 0;
     document.getElementById('goalProgressBar').style.width = `${Math.min(percent, 100)}%`;
     document.getElementById('goalProgressText').textContent = isPrivacyMode ? `*** / *** BTC (***%)` : `${s.totalBTC.toFixed(4)} / ${btcGoal} BTC (${percent.toFixed(2)}%)`;
+    pushMascotState({ goalPct: percent });
 }
 
 const badgesConfig = [
@@ -1037,6 +1183,14 @@ async function initializeApp() {
     
     document.getElementById('date').valueAsDate = new Date();
     fetchBlockHeight(); setInterval(fetchBlockHeight, 60000);
+    // อัปเดตราคาเงียบๆ ทุก 60 วินาที ให้อารมณ์ส้มจี๊ดตามตลาดจริง (ข้ามตอนแท็บถูกซ่อน)
+    setInterval(async () => {
+        if (document.visibilityState !== 'visible' || !isDataLoaded) return;
+        try {
+            const data = await fetchWithRetry('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true', {}, 1);
+            if (data?.bitcoin) { btcPriceData = { price: data.bitcoin.usd, change: data.bitcoin.usd_24h_change }; renderSummary(); renderHistory(); writeCache(); }
+        } catch (e) {}
+    }, 60000);
 
     // 1) แสดงข้อมูลจาก cache ทันที (ไม่ต้องรอ Google Sheet)
     const cached = readCache();
@@ -1066,6 +1220,778 @@ function exportToCSV() {
     const link = document.createElement("a"); link.href = url; link.download = "portfolio.csv"; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+</script>
+
+<!-- ================= 3D LAYER (three.js) =================
+     แยกเป็น module: ถ้าโหลด three.js ไม่ได้หรือเครื่องไม่รองรับ WebGL หน้าเว็บยังใช้งานได้ปกติ (โชว์อีโมจิแทน) -->
+<script type="module">
+import * as THREE from 'three';
+
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const motion = reduceMotion ? 0.35 : 1;
+const lerp = (a, b, k) => a + (b - a) * k;
+const damp = (dt, rate) => 1 - Math.exp(-rate * dt);
+
+function makeRenderer(canvas, { antialias = true, maxDpr = 2 } = {}) {
+    const r = new THREE.WebGLRenderer({ canvas, antialias, alpha: true, powerPreference: 'low-power' });
+    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+    r.outputColorSpace = THREE.SRGBColorSpace;
+    r.toneMapping = THREE.ACESFilmicToneMapping;
+    r.toneMappingExposure = 1.15;
+    return r;
+}
+
+function canvasTexture(w, h, draw) {
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    draw(c.getContext('2d'), w, h);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+}
+
+const dotTexture = canvasTexture(64, 64, (g, s) => {
+    const gr = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,0.7)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, s, s);
+});
+
+const shadowTexture = canvasTexture(128, 128, (g, s) => {
+    const gr = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    gr.addColorStop(0, 'rgba(0,0,0,0.55)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, s, s);
+});
+
+// หน้าเหรียญทอง (วาดสัญลักษณ์ ₿ เองด้วย B + ขีด เพื่อไม่ต้องพึ่งฟอนต์ที่มีอักษร ₿)
+function coinFaceTexture(withSymbol) {
+    return canvasTexture(512, 512, (g, s) => {
+        const c = s / 2;
+        const gr = g.createRadialGradient(c * 0.75, c * 0.65, s * 0.04, c, c, c);
+        gr.addColorStop(0, '#FFEFB0'); gr.addColorStop(0.55, '#EBC965'); gr.addColorStop(1, '#B3862B');
+        g.fillStyle = gr; g.fillRect(0, 0, s, s);
+        g.strokeStyle = 'rgba(125,86,18,0.55)'; g.lineWidth = s * 0.014;
+        g.beginPath(); g.arc(c, c, c * 0.84, 0, Math.PI * 2); g.stroke();
+        g.fillStyle = 'rgba(255,244,200,0.55)';
+        for (let i = 0; i < 56; i++) {
+            const a = (i / 56) * Math.PI * 2;
+            g.beginPath(); g.arc(c + Math.cos(a) * c * 0.92, c + Math.sin(a) * c * 0.92, s * 0.008, 0, Math.PI * 2); g.fill();
+        }
+        if (withSymbol) {
+            g.save(); g.translate(c, c * 1.03); g.rotate(-0.21);
+            g.font = `800 ${s * 0.56}px Inter, Arial, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+            g.fillStyle = 'rgba(128,88,18,0.9)';
+            g.fillRect(-s * 0.075, -s * 0.33, s * 0.05, s * 0.66); g.fillRect(s * 0.025, -s * 0.33, s * 0.05, s * 0.66);
+            g.fillText('B', s * 0.02, 0);
+            g.restore();
+        }
+    });
+}
+
+// Environment map แบบเบาๆ ให้วัสดุโลหะทองมีแสงสะท้อน (ไม่ต้องโหลด HDR)
+function makeEnvironment(renderer) {
+    const tex = canvasTexture(256, 128, (g, w, h) => {
+        const gr = g.createLinearGradient(0, 0, 0, h);
+        gr.addColorStop(0, '#fff6dc'); gr.addColorStop(0.45, '#8a7448'); gr.addColorStop(0.6, '#2a2418'); gr.addColorStop(1, '#07090d');
+        g.fillStyle = gr; g.fillRect(0, 0, w, h);
+        g.fillStyle = 'rgba(255,255,255,0.9)';
+        g.fillRect(w * 0.12, h * 0.12, w * 0.14, h * 0.16); g.fillRect(w * 0.62, h * 0.08, w * 0.2, h * 0.12);
+    });
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const env = pmrem.fromEquirectangular(tex).texture;
+    tex.dispose(); pmrem.dispose();
+    return env;
+}
+
+// ค่าพารามิเตอร์อารมณ์ของตัวละคร (ฝั่งข้อความอยู่ใน MOOD_INFO ของ script หลัก)
+const MOODS = {
+    moon:    { bounce: 0.22, speed: 7.5, arms: 2.6,  back: 0,    wave: 0.45, rim: 0xffcf4d, particles: 'confetti' },
+    happy:   { bounce: 0.1,  speed: 4.2, arms: 0.9,  back: 0,    wave: 0.9,  rim: 0x63e07f, particles: 'sparkle' },
+    neutral: { bounce: 0.025,speed: 1.6, arms: 0.1,  back: 0.45, wave: 0,    rim: 0xc3c9d4, particles: 'dust' },
+    sad:     { bounce: 0.01, speed: 1.0, arms: 0.12, back: 0.12, wave: 0,    rim: 0x5b9cff, particles: 'rain',  cloud: 0x8e98a8, droop: 0.14 },
+    panic:   { bounce: 0.045,speed: 15,  arms: 2.75, back: 0,    wave: 0.3,  rim: 0xff4646, particles: 'storm', cloud: 0x3f4552, sweat: true, shake: 0.04, flash: true },
+};
+
+// ---------------------------------------------------------------- MASCOT
+function initMascot() {
+    const stage = document.getElementById('mascotStage');
+    const canvas = document.getElementById('mascotCanvas');
+    const renderer = makeRenderer(canvas);
+    const scene = new THREE.Scene();
+    scene.environment = makeEnvironment(renderer);
+
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 50);
+    const LOOK = new THREE.Vector3(0.25, 0.55, 0);
+    const GROUND = -1.17;
+
+    // Lights
+    scene.add(new THREE.HemisphereLight(0xfff3d6, 0x4a3a50, 0.85));
+    const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(3, 4, 5); scene.add(key);
+    const rim = new THREE.DirectionalLight(0xc3c9d4, 1.4); rim.position.set(-4, 2.5, -3); scene.add(rim);
+    const fill = new THREE.PointLight(0xfff0e6, 2, 8); fill.position.set(1.5, 0.5, 3); scene.add(fill);
+    const flash = new THREE.PointLight(0xdfe8ff, 0, 12); flash.position.set(-0.3, 2.6, 1.5); scene.add(flash);
+
+    // Materials: cel-shading แบบอนิเมะ (MeshToonMaterial + เส้นขอบ inverted hull)
+    const gold = new THREE.MeshStandardMaterial({ color: 0xE2B850, metalness: 0.9, roughness: 0.28 });
+    const faceBack = new THREE.MeshStandardMaterial({ map: coinFaceTexture(true), metalness: 0.55, roughness: 0.38 });
+    const toonGrad = new THREE.DataTexture(new Uint8Array([150, 215, 255]), 3, 1, THREE.RedFormat);
+    toonGrad.minFilter = toonGrad.magFilter = THREE.NearestFilter; toonGrad.needsUpdate = true;
+    const toon = color => new THREE.MeshToonMaterial({ color, gradientMap: toonGrad });
+    const skin = toon(0xffdcc8), hair = toon(0xf8a5c8), tank = toon(0xff7424), denim = toon(0x4f78b5),
+          shoeMat = toon(0xffffff), orangeMat = toon(0xff8a1c), leafMat = toon(0x3fae4a);
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0x4a1a30, side: THREE.BackSide });
+    // เส้นขอบ: ดันผิวออกตาม normal แล้ววาดด้านหลัง (ใช้ได้กับทุกทรง รวมถึงปอยผมเรียว)
+    const hulls = new WeakMap();
+    const hairLine = new THREE.MeshBasicMaterial({ color: 0xa8487a, side: THREE.BackSide });
+    const outline = (m, t = 0.008, mat = lineMat) => {
+        let h = hulls.get(m.geometry);
+        if (!h) {
+            h = m.geometry.clone();
+            const p = h.attributes.position, n = h.attributes.normal;
+            for (let i = 0; i < p.count; i++) p.setXYZ(i, p.getX(i) + n.getX(i) * t, p.getY(i) + n.getY(i) * t, p.getZ(i) + n.getZ(i) * t);
+            hulls.set(m.geometry, h);
+        }
+        m.add(new THREE.Mesh(h, mat)); return m;
+    };
+    const lathe = (pts, mat, sz = 0.72) => {
+        const m = new THREE.Mesh(new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 40), mat);
+        m.scale.z = sz; return m;
+    };
+    const dropMat = new THREE.MeshStandardMaterial({ color: 0x8fd3ff, roughness: 0.05, transparent: true, opacity: 0.85 });
+
+    const bot = new THREE.Group(); bot.scale.setScalar(1.0); scene.add(bot);   // ตำแหน่ง/กระโดด
+    const body = new THREE.Group(); bot.add(body);                             // หมุน/เอียงตามอารมณ์
+
+    // ---- ลำตัว (สัดส่วน ~3.5 หัว) ----
+    body.add(lathe([[0.001, 0.05], [0.25, 0.08], [0.26, 0.4], [0.235, 0.52], [0.16, 0.6], [0.075, 0.66], [0.06, 0.8]], skin));
+    const top = outline(lathe([[0.001, -0.47], [0.33, -0.47], [0.32, -0.33], [0.285, -0.1], [0.27, 0.08], [0.29, 0.28], [0.27, 0.42], [0.258, 0.46]], tank));
+    body.add(top);
+    const logoTex = canvasTexture(256, 128, (g, w, h) => {
+        g.font = '900 62px Inter, "Arial Black", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.lineJoin = 'round'; g.lineWidth = 10; g.strokeStyle = '#2f3b3a'; g.strokeText('HODL', w * 0.42, h / 2);
+        g.fillStyle = '#8fd8cb'; g.fillText('HODL', w * 0.42, h / 2);
+        g.beginPath(); [[206, 18], [236, 18], [220, 54], [248, 54], [192, 116], [208, 68], [182, 68]].forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath();
+        g.lineWidth = 5; g.stroke(); g.fillStyle = '#ffe14d'; g.fill();
+    });
+    const logo = new THREE.Mesh(new THREE.CylinderGeometry(0.297, 0.283, 0.17, 24, 1, true, -0.75, 1.5), new THREE.MeshBasicMaterial({ map: logoTex, transparent: true, depthWrite: false }));
+    logo.position.y = 0.16; top.add(logo);
+    [-1, 1].forEach(s => {   // สายเสื้อกล้าม
+        const c = new THREE.CatmullRomCurve3([new THREE.Vector3(s * 0.13, 0.43, 0.19), new THREE.Vector3(s * 0.17, 0.6, 0.01), new THREE.Vector3(s * 0.13, 0.43, -0.19)]);
+        body.add(new THREE.Mesh(new THREE.TubeGeometry(c, 12, 0.022, 6), tank));
+    });
+    body.add(outline(lathe([[0.001, -0.72], [0.2, -0.72], [0.345, -0.7], [0.335, -0.58], [0.31, -0.42], [0.001, -0.42]], denim, 0.75)));
+    [-0.16, 0.16].forEach(x => {
+        const hem = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.16, 0.2, 20), denim)); hem.position.set(x, -0.72, 0); body.add(hem);
+        const thigh = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.085, 0.47, 16), skin)); thigh.position.set(x, -0.98, 0); body.add(thigh);
+        const knee = new THREE.Mesh(new THREE.SphereGeometry(0.086, 14, 10), skin); knee.position.set(x, -1.21, 0); body.add(knee);
+        const calf = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.083, 0.055, 0.36, 16), skin)); calf.position.set(x, -1.38, 0); body.add(calf);
+        const shoe = outline(new THREE.Mesh(new THREE.SphereGeometry(0.085, 18, 12), shoeMat)); shoe.scale.set(1, 0.6, 1.75); shoe.position.set(x, -1.56, 0.05); body.add(shoe);
+    });
+    const BOT_BASE_Y = GROUND + 1.61;
+
+    // แขน (pivot ที่ไหล่)
+    const arms = [-1, 1].map(side => {
+        const pivot = new THREE.Group(); pivot.position.set(side * 0.29, 0.5, 0);
+        const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.068, 16, 10), skin);
+        const upper = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.066, 0.054, 0.4, 14), skin)); upper.position.y = -0.2;
+        const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.048, 12, 8), skin); elbow.position.y = -0.4;
+        const fore = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.053, 0.042, 0.36, 14), skin)); fore.position.y = -0.58;
+        const hand = outline(new THREE.Mesh(new THREE.SphereGeometry(0.05, 14, 10), skin)); hand.scale.set(0.85, 1.25, 0.6); hand.position.y = -0.8;
+        pivot.add(shoulder, upper, elbow, fore, hand); body.add(pivot); return pivot;
+    });
+
+    // ---- หัว: หน้าทรงอนิเมะ แก้มเรียว คางแหลม ----
+    const HR = 0.42;
+    const head = new THREE.Group(); head.position.y = 1.12; body.add(head);
+    const shapeHead = geo => {
+        const p = geo.attributes.position;
+        for (let i = 0; i < p.count; i++) {
+            let x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+            const ny = y / HR;
+            if (ny < 0) {
+                const k = Math.pow(-ny, 1.6);
+                x *= 1 - 0.4 * k; z *= 1 - 0.14 * k; y *= 1.08;
+                if (z > 0) z += 0.03 * -ny;
+            }
+            p.setXYZ(i, x * 0.92, y, z);
+        }
+        geo.computeVertexNormals(); return geo;
+    };
+    head.add(outline(new THREE.Mesh(shapeHead(new THREE.SphereGeometry(HR, 64, 48)), skin), 0.007));
+
+    // หน้า: วาดลายเส้นอนิเมะลง canvas แล้วฉายลงครึ่งหน้าของหัว (วาดใหม่เมื่ออารมณ์/สายตา/กะพริบเปลี่ยน)
+    const FW = HR * 0.92, FH = HR * 1.08, FS = 512;
+    const fx = x => (x / FW * 0.5 + 0.5) * FS, fy = y => (0.5 - y / FH * 0.5) * FS;
+    const faceCanvas = document.createElement('canvas'); faceCanvas.width = faceCanvas.height = FS;
+    const fg = faceCanvas.getContext('2d');
+    const faceTex = new THREE.CanvasTexture(faceCanvas); faceTex.colorSpace = THREE.SRGBColorSpace; faceTex.anisotropy = 4;
+    {
+        const geo = shapeHead(new THREE.SphereGeometry(HR * 1.004, 64, 48, 0, Math.PI, 0, Math.PI));
+        const p = geo.attributes.position, uv = geo.attributes.uv;
+        for (let i = 0; i < p.count; i++) uv.setXY(i, 0.5 + p.getX(i) / (2 * FW), 0.5 + p.getY(i) / (2 * FH));
+        const face = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: faceTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+        face.renderOrder = 2; head.add(face);
+    }
+    const ell = (x, y, rx, ry, rot = 0) => { fg.beginPath(); fg.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); };
+    const star = (x, y, r, rot) => {
+        fg.beginPath();
+        for (let i = 0; i < 8; i++) { const a = rot + i * Math.PI / 4, rr = i % 2 ? r * 0.4 : r; fg.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+        fg.closePath(); fg.fill();
+    };
+    function drawEye(cx, cy, side, st) {
+        const g = fg, w = 50, h = 58, m = st.mood;
+        g.save(); g.translate(cx, cy); if (side < 0) g.scale(-1, 1);   // วาดตาขวาแล้วกลับด้านเป็นตาซ้าย (หางตาอยู่ด้าน +x)
+        g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = '#2b0f22';
+        if (m === 'happy' || st.blink < 0.3) {
+            g.lineWidth = 8; g.beginPath();
+            if (m === 'happy') { g.moveTo(-w * 0.9, 12); g.quadraticCurveTo(0, -h * 0.85, w * 0.95, 8); }
+            else { g.moveTo(-w * 0.95, 4); g.quadraticCurveTo(0, 18, w * 1.0, -6); g.moveTo(w * 0.95, -4); g.lineTo(w * 1.25, -16); }
+            g.stroke(); g.restore(); return;
+        }
+        const top = -h * st.blink, bot = h * 0.8;
+        g.beginPath(); g.moveTo(-w, -h * 0.1);
+        g.bezierCurveTo(-w * 0.6, top * 1.15, w * 0.6, top * 1.1, w * 1.05, -h * 0.35);
+        g.bezierCurveTo(w * 0.95, bot * 0.75, -w * 0.55, bot * 1.05, -w, -h * 0.1); g.closePath();
+        g.fillStyle = '#fffafc'; g.fill();
+        g.save(); g.clip();
+        const sc = m === 'panic' ? 0.5 : 1, iw = w * 0.7 * sc, ih = h * 0.95 * sc;
+        const ix = st.gx * 10 * side + (m === 'panic' ? Math.sin(st.t * 40) * 2 : 0), iy = 6 - st.gy * 8;
+        const gr = g.createLinearGradient(0, iy - ih, 0, iy + ih);
+        gr.addColorStop(0, '#24093c'); gr.addColorStop(0.5, '#6a3aa2'); gr.addColorStop(1, '#d2acf5');
+        g.fillStyle = gr; ell(ix, iy, iw, ih); g.fill(); g.lineWidth = 3; g.strokeStyle = '#1d0830'; g.stroke();
+        g.fillStyle = 'rgba(20,6,34,0.9)'; ell(ix, iy - 4 * sc, iw * 0.45, ih * 0.5); g.fill();
+        g.fillStyle = 'rgba(70,25,95,0.4)'; g.fillRect(-w * 1.3, top - 14, w * 2.6, 26);
+        g.fillStyle = '#ffffff';
+        if (m === 'moon') { g.fillStyle = '#fff6c8'; star(ix - iw * 0.2, iy - ih * 0.25, 20, st.t * 2); g.fillStyle = '#fff'; star(ix + iw * 0.35, iy + ih * 0.4, 8, -st.t * 3); }
+        else { ell(ix - iw * 0.38, iy - ih * 0.42, 10, 13, -0.3); g.fill(); ell(ix + iw * 0.32, iy + ih * 0.38, 5, 5); g.fill(); }
+        if (m === 'sad') {
+            g.fillStyle = 'rgba(160,215,255,0.45)'; g.fillRect(-w * 1.3, bot * 0.25, w * 2.6, bot);
+            g.strokeStyle = 'rgba(255,255,255,0.9)'; g.lineWidth = 3; g.beginPath(); g.moveTo(-w * 0.6, bot * 0.35);
+            for (let k = 0; k < 6; k++) g.quadraticCurveTo(-w * 0.5 + k * w * 0.22, bot * (k % 2 ? 0.25 : 0.45), -w * 0.4 + k * w * 0.22, bot * 0.35);
+            g.stroke();
+        }
+        g.restore();
+        g.strokeStyle = '#2b0f22';
+        g.lineWidth = 9; g.beginPath(); g.moveTo(-w * 1.02, -h * 0.08);
+        g.bezierCurveTo(-w * 0.6, top * 1.2, w * 0.6, top * 1.14, w * 1.1, -h * 0.38); g.stroke();
+        g.lineWidth = 6; g.beginPath(); g.moveTo(w * 1.0, -h * 0.36); g.lineTo(w * 1.32, -h * 0.62); g.moveTo(w * 1.02, -h * 0.24); g.lineTo(w * 1.32, -h * 0.28); g.stroke();
+        g.lineWidth = 2.5; g.beginPath(); g.moveTo(w * 0.15, bot * 0.98); g.quadraticCurveTo(w * 0.7, bot * 0.8, w * 0.98, bot * 0.3); g.stroke();
+        g.restore();
+    }
+    function drawFace(st) {
+        const g = fg, m = st.mood;
+        g.clearRect(0, 0, FS, FS);
+        g.lineCap = 'round'; g.lineJoin = 'round';
+        if (m === 'panic') {   // หน้าซีด + เส้นเครียดแบบการ์ตูน
+            const gr = g.createLinearGradient(0, fy(0.32), 0, fy(-0.02));
+            gr.addColorStop(0, 'rgba(80,100,200,0.5)'); gr.addColorStop(1, 'rgba(80,100,200,0)');
+            g.fillStyle = gr; g.fillRect(0, 0, FS, fy(-0.02));
+            g.strokeStyle = 'rgba(60,70,160,0.65)'; g.lineWidth = 3;
+            for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(fx(i * 0.045), fy(0.26)); g.lineTo(fx(i * 0.045), fy(0.1)); g.stroke(); }
+        }
+        // แก้มแดง + ขีดเฉียง
+        const blush = m === 'happy' || m === 'moon' ? 0.85 : m === 'panic' ? 0.2 : 0.55;
+        [-1, 1].forEach(s => {
+            const cx = fx(s * 0.2), cy = fy(-0.15);
+            const gr = g.createRadialGradient(cx, cy, 2, cx, cy, 44);
+            gr.addColorStop(0, `rgba(255,120,150,${blush})`); gr.addColorStop(1, 'rgba(255,120,150,0)');
+            g.fillStyle = gr; ell(cx, cy, 46, 24); g.fill();
+            g.strokeStyle = `rgba(220,70,110,${blush})`; g.lineWidth = 3;
+            for (let k = -1; k <= 1; k++) { g.beginPath(); g.moveTo(cx + k * 14 + 6, cy - 9); g.lineTo(cx + k * 14 - 3, cy + 9); g.stroke(); }
+        });
+        // ตา + คิ้ว
+        [-1, 1].forEach(s => drawEye(fx(s * 0.15), fy(-0.02), s, st));
+        const browA = m === 'sad' ? 0.3 : m === 'panic' ? 0.42 : m === 'happy' || m === 'moon' ? -0.12 : 0.05;
+        const browY = m === 'panic' ? 0.115 : m === 'happy' || m === 'moon' ? 0.105 : 0.095;
+        [-1, 1].forEach(s => {
+            g.save(); g.translate(fx(s * 0.15), fy(browY)); if (s < 0) g.scale(-1, 1); g.rotate(browA);
+            g.strokeStyle = '#c4507f'; g.lineWidth = 5; g.beginPath(); g.moveTo(-34, 4); g.quadraticCurveTo(0, -8, 36, 2); g.stroke();
+            g.restore();
+        });
+        // จมูก
+        g.strokeStyle = 'rgba(205,120,110,0.9)'; g.lineWidth = 3; g.beginPath(); g.moveTo(fx(0.004), fy(-0.13)); g.lineTo(fx(-0.006), fy(-0.145)); g.stroke();
+        // ปาก
+        const mx = fx(0), my = fy(-0.26);
+        g.strokeStyle = '#8a2a3a'; g.lineWidth = 4;
+        if (m === 'neutral') {
+            g.beginPath(); g.moveTo(mx - 9, my); g.quadraticCurveTo(mx, my - 3, mx + 9, my); g.stroke();
+            g.fillStyle = 'rgba(200,90,110,0.5)'; ell(mx, my + 5, 6, 3); g.fill();
+        } else if (m === 'happy' || m === 'moon') {
+            const W = m === 'moon' ? 30 : 20, H = m === 'moon' ? 28 : 17;
+            g.fillStyle = '#9b2c3f'; g.beginPath(); g.moveTo(mx - W, my - 6); g.quadraticCurveTo(mx, my - 2, mx + W, my - 6); g.quadraticCurveTo(mx, my + H * 1.6, mx - W, my - 6); g.fill();
+            g.fillStyle = '#ff8a9c'; ell(mx, my + H * 0.6, W * 0.55, H * 0.35); g.fill();
+            if (m === 'moon') { g.fillStyle = '#fff'; g.fillRect(mx - W * 0.7, my - 6, W * 1.4, 6); }
+            g.stroke();
+        } else if (m === 'sad') {
+            g.beginPath(); g.moveTo(mx - 16, my + 6);
+            g.quadraticCurveTo(mx - 8, my - 6, mx, my + 1); g.quadraticCurveTo(mx + 8, my - 6, mx + 16, my + 6); g.stroke();
+        } else {
+            g.fillStyle = '#7a1a2c'; ell(mx, my + 6, 15, 21 + Math.sin(st.t * 18) * 2); g.fill(); g.stroke();
+            g.fillStyle = '#ff8a9c'; ell(mx, my + 18, 9, 6); g.fill();
+        }
+        // หยดเหงื่อการ์ตูน
+        if (m === 'neutral' || m === 'panic') {
+            const sx = fx(0.29), sy = fy(m === 'panic' ? 0.12 : 0.02);
+            g.fillStyle = 'rgba(170,220,255,0.95)'; g.strokeStyle = '#4f8fc4'; g.lineWidth = 2.5;
+            g.beginPath(); g.moveTo(sx, sy - 22); g.quadraticCurveTo(sx + 13, sy + 2, sx, sy + 10); g.quadraticCurveTo(sx - 13, sy + 2, sx, sy - 22); g.fill(); g.stroke();
+            g.fillStyle = '#fff'; ell(sx - 3, sy + 1, 2.5, 4); g.fill();
+        }
+        // น้ำตาไหลเป็นสาย
+        if (m === 'sad') {
+            g.strokeStyle = 'rgba(140,205,255,0.85)'; g.lineWidth = 7;
+            [-1, 1].forEach(s => {
+                const x0 = fx(s * 0.17), y0 = fy(-0.08);
+                g.setLineDash([16, 10]); g.lineDashOffset = -st.t * 40;
+                g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(x0 + s * 10, fy(-0.2), x0 + s * 2, fy(-0.36)); g.stroke();
+            });
+            g.setLineDash([]);
+        }
+        faceTex.needsUpdate = true;
+    }
+
+    // ---- ผมชมพูยาว: ปอยผมเรียวปลายแหลม (สร้าง geometry เอง) ----
+    function strand(pts, r0, r1, flat = 0.4, seg = 22, rad = 8) {
+        const curve = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)));
+        const pos = [], idx = [], T = new THREE.Vector3(), out = new THREE.Vector3(), sd = new THREE.Vector3(), up = new THREE.Vector3();
+        for (let i = 0; i <= seg; i++) {
+            const t = i / seg, p = curve.getPointAt(t); curve.getTangentAt(t, T);
+            out.set(p.x, Math.max(p.y, 0), p.z).normalize();
+            sd.crossVectors(T, out).normalize(); up.crossVectors(sd, T).normalize();
+            const r = lerp(r0, r1, Math.pow(t, 1.3));
+            for (let j = 0; j < rad; j++) {
+                const a = j / rad * Math.PI * 2, c = Math.cos(a) * r, s = Math.sin(a) * r * flat;
+                pos.push(p.x + sd.x * c + up.x * s, p.y + sd.y * c + up.y * s, p.z + sd.z * c + up.z * s);
+            }
+        }
+        for (let i = 0; i < seg; i++) for (let j = 0; j < rad; j++) {
+            const a = i * rad + j, b = i * rad + (j + 1) % rad, c = a + rad, d = b + rad;
+            idx.push(a, c, b, b, c, d);
+        }
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+        return outline(new THREE.Mesh(geo, hair), 0.005, hairLine);
+    }
+    const scalpR = HR * 1.04;
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(scalpR, 48, 24, 0, Math.PI * 2, 0, Math.PI * 0.4), hair); cap.scale.x = 0.92; head.add(cap);
+    const backShell = new THREE.Mesh(new THREE.SphereGeometry(scalpR, 48, 24, Math.PI, Math.PI, 0, Math.PI * 0.78), hair); backShell.scale.x = 0.92; head.add(backShell);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.338, 0.011, 6, 48, Math.PI * 0.8), new THREE.MeshBasicMaterial({ color: 0xffe0ef }));
+    ring.rotation.x = Math.PI / 2; ring.rotation.z = Math.PI * 0.1; ring.position.y = 0.285; ring.scale.x = 0.92; head.add(ring);   // วงแสงบนผม
+    const faceZ = (x, y) => Math.sqrt(Math.max(0, HR * HR - (x / 0.92) ** 2 - y * y));
+    [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1].forEach(u => {   // หน้าม้า
+        const len = u === 0 ? 0.12 : Math.abs(u) > 0.9 ? 0.14 : 0.06 + Math.abs(u) * 0.03;
+        const tx = u * 0.25 - u * 0.03, ty = 0.08 - len, mx = u * 0.2, my = 0.27;
+        head.add(strand([[u * 0.1, 0.42, 0.1], [mx, my, faceZ(mx, my) + 0.05], [tx, ty, faceZ(tx, ty) + 0.025]], 0.09, 0.004, 0.35));
+    });
+    const sideLocks = new THREE.Group(); head.add(sideLocks);
+    [-1, 1].forEach(s => {   // ปอยผมข้างแก้ม ยาวถึงเอว
+        sideLocks.add(strand([[s * 0.3, 0.3, 0.22], [s * 0.37, 0.0, 0.2], [s * 0.36, -0.42, 0.17], [s * 0.39, -0.9, 0.13], [s * 0.43, -1.28, 0.09]], 0.11, 0.01, 0.45, 28));
+        sideLocks.add(strand([[s * 0.34, 0.25, 0.12], [s * 0.42, -0.1, 0.06], [s * 0.45, -0.6, 0.0], [s * 0.5, -1.15, -0.04]], 0.11, 0.012, 0.45, 26));
+    });
+    const hairBack = new THREE.Group(); head.add(hairBack);
+    const massGeo = new THREE.CylinderGeometry(0.4, 0.5, 1.45, 40, 1, true, Math.PI / 2, Math.PI);   // มวลผมด้านหลัง (ให้ผมดูหนา)
+    const mass = new THREE.Mesh(massGeo, hair); mass.position.y = -0.62; mass.scale.z = 0.78; hairBack.add(mass);
+    for (let i = 0; i <= 10; i++) {   // ปอยผมด้านหลัง ยาวถึงสะโพก
+        const phi = Math.PI * (0.5 + i / 10), sx = Math.sin(phi), sz = Math.cos(phi);
+        const L = 1.38 + Math.sin(i * 1.7) * 0.1;
+        hairBack.add(strand([[sx * 0.36, 0.3, sz * 0.36], [sx * 0.46, -0.15, sz * 0.46], [sx * 0.5, -0.7, sz * 0.42], [sx * 0.55 + Math.sin(i) * 0.03, -L, sz * 0.42]], 0.17, 0.025, 0.45, 26));
+    }
+
+    // ก้าน + ใบส้มบนหัว (เสาอากาศอารมณ์: ดุ๊กดิ๊กตอนเขียว เหี่ยวตอนแดง)
+    const stem = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.028, 0.1, 10), toon(0x6b4a26)), 0.006);
+    stem.position.y = scalpR + 0.04; head.add(stem);
+    const leafPivot = new THREE.Group(); leafPivot.position.y = scalpR + 0.08; leafPivot.rotation.x = 0.95; head.add(leafPivot);
+    const leafGeo = new THREE.SphereGeometry(0.15, 20, 12);
+    const leafVeinMat = new THREE.MeshBasicMaterial({ color: 0x2a7a35 });
+    [[0.15, 0, 0.35, 1, 0], [-0.1, 0.01, -0.5, 0.7, 0.6]].forEach(([x, y, rz, sc, ry]) => {
+        const g = new THREE.Group(); g.position.set(x, y, 0); g.rotation.set(0, ry, rz); g.scale.setScalar(sc);
+        const leaf = outline(new THREE.Mesh(leafGeo, leafMat), 0.01); leaf.scale.set(1, 0.14, 0.48);
+        const vein = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.01, 0.01), leafVeinMat); vein.position.y = 0.022;
+        g.add(leaf, vein); leafPivot.add(g);
+    });
+
+    // กิ๊บลูกส้ม (เอกลักษณ์ส้มจี๊ด) + กิ๊บเหรียญ ₿
+    const clip = new THREE.Group();
+    const clipLeaf = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 8), leafMat); clipLeaf.scale.set(1, 0.3, 0.55); clipLeaf.position.set(0.04, 0.05, 0); clipLeaf.rotation.z = 0.5;
+    clip.add(outline(new THREE.Mesh(new THREE.SphereGeometry(0.055, 20, 14), orangeMat), 0.008), clipLeaf);
+    clip.position.set(0.3, 0.26, 0.26); head.add(clip);
+    const coinClipGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.02, 28); coinClipGeo.rotateX(Math.PI / 2);
+    const coinClip = new THREE.Mesh(coinClipGeo, [gold, faceBack, gold]); coinClip.position.set(-0.3, 0.26, 0.27); coinClip.rotation.y = -0.6; head.add(coinClip);
+
+    // เหงื่อกระเด็น (ตอน Panic)
+    const dropGeo = new THREE.SphereGeometry(0.04, 14, 10);
+    const sweats = [0, 1, 2].map(i => {
+        const d = new THREE.Mesh(dropGeo, dropMat); d.scale.set(0.9, 1.3, 0.9); d.visible = false; d.userData = { t: i / 3, side: i % 2 ? 1 : -1 }; head.add(d); return d;
+    });
+    let lastFaceKey = '', faceTimer = 0;
+
+    // เมฆฝน + ฟ้าผ่า
+    const cloudMat = new THREE.MeshStandardMaterial({ color: 0x8e98a8, roughness: 1 });
+    const cloud = new THREE.Group();
+    [[0, 0, 0, 0.42], [-0.45, -0.08, 0, 0.32], [0.45, -0.06, 0, 0.34], [-0.2, 0.18, -0.1, 0.32], [0.22, 0.2, -0.05, 0.3]].forEach(([x, y, z, r]) => {
+        const s = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), cloudMat); s.position.set(x, y, z); cloud.add(s);
+    });
+    cloud.scale.setScalar(0.001); cloud.visible = false; scene.add(cloud);
+    const boltShape = new THREE.Shape();
+    [[0, 0], [0.16, 0], [0.04, -0.32], [0.18, -0.32], [-0.08, -0.85], [0, -0.42], [-0.13, -0.42]].forEach(([x, y], i) => i ? boltShape.lineTo(x, y) : boltShape.moveTo(x, y));
+    const bolt = new THREE.Mesh(new THREE.ShapeGeometry(boltShape), new THREE.MeshBasicMaterial({ color: 0xfff27a, transparent: true, opacity: 0 }));
+    bolt.position.set(0.3, -0.2, 0.3); cloud.add(bolt);
+
+    // เงาบนพื้น
+    const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTexture, transparent: true, depthWrite: false });
+    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.1), shadowMat);
+    shadow.rotation.x = -Math.PI / 2; shadow.position.y = GROUND; scene.add(shadow);
+
+    // กองเหรียญ = ความคืบหน้าเป้าหมาย (10% ต่อเหรียญ)
+    const stack = new THREE.Group(); stack.position.set(1.55, GROUND, -0.25); scene.add(stack);
+    const stackShadow = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.8), shadowMat); stackShadow.rotation.x = -Math.PI / 2; stackShadow.position.y = 0.002; stackShadow.visible = false; stack.add(stackShadow);
+    const stackGeo = new THREE.CylinderGeometry(0.34, 0.34, 0.08, 48);
+    const stackFace = new THREE.MeshStandardMaterial({ map: coinFaceTexture(true), metalness: 0.55, roughness: 0.38 });
+    const stackCoins = [];
+    let goalFull = false;
+    function setGoal(pct) {
+        const want = pct == null || !isFinite(pct) || pct <= 0 ? 0 : Math.max(1, Math.min(10, Math.ceil(pct / 10)));
+        goalFull = isFinite(pct) && pct >= 100;
+        while (stackCoins.length < want) {
+            const i = stackCoins.length;
+            const m = new THREE.Mesh(stackGeo, [gold, stackFace, stackFace]);
+            m.userData = { ty: 0.045 + i * 0.087, vy: 0 };
+            m.position.set((Math.random() - 0.5) * 0.07, m.userData.ty + 2.4 + i * 0.15, (Math.random() - 0.5) * 0.07);
+            m.rotation.y = Math.random() * Math.PI * 2;
+            stack.add(m); stackCoins.push(m);
+        }
+        while (stackCoins.length > want) stack.remove(stackCoins.pop());
+        stackShadow.visible = want > 0;
+    }
+
+    // อนุภาค: คอนเฟตตี / ประกาย / ฝุ่น / ฝน / พายุ
+    const P_MAX = 240;
+    const pPos = new Float32Array(P_MAX * 3), pCol = new Float32Array(P_MAX * 3), pVel = new Float32Array(P_MAX * 3);
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
+    const pMat = new THREE.PointsMaterial({ size: 0.1, map: dotTexture, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+    const points = new THREE.Points(pGeo, pMat); scene.add(points);
+    const PCFG = {
+        confetti: { n: 170, size: 0.14, colors: [0xffd54f, 0x63e07f, 0xff7ab6, 0x6ad6ff, 0xffffff] },
+        sparkle:  { n: 80,  size: 0.1,  colors: [0xffe08a, 0xffffff, 0x9cf0ae] },
+        dust:     { n: 45,  size: 0.07, colors: [0xbfae80, 0x8d93a0] },
+        rain:     { n: 150, size: 0.06, colors: [0x7fb8ff, 0xa9d1ff] },
+        storm:    { n: 240, size: 0.07, colors: [0x7fa8ff, 0xd8e6ff, 0x5b7fd6] },
+    };
+    let pMode = 'dust';
+    const tmpC = new THREE.Color();
+    function spawn(i, initial) {
+        const cfg = PCFG[pMode], i3 = i * 3;
+        tmpC.setHex(cfg.colors[(Math.random() * cfg.colors.length) | 0]);
+        pCol[i3] = tmpC.r; pCol[i3 + 1] = tmpC.g; pCol[i3 + 2] = tmpC.b;
+        const cx = bot.position.x;
+        if (pMode === 'rain' || pMode === 'storm') {
+            const spread = pMode === 'storm' ? 1.5 : 0.75;
+            pPos[i3] = cx + (Math.random() - 0.5) * spread * 2; pPos[i3 + 1] = initial ? lerp(GROUND, 2.15, Math.random()) : 2.2; pPos[i3 + 2] = (Math.random() - 0.5) * 0.8;
+            pVel[i3] = pMode === 'storm' ? -0.8 : 0; pVel[i3 + 1] = -(pMode === 'storm' ? 6 + Math.random() * 2 : 3.5 + Math.random()); pVel[i3 + 2] = 0;
+        } else {
+            pPos[i3] = (Math.random() - 0.5) * 6; pPos[i3 + 1] = initial ? lerp(GROUND, 2.2, Math.random()) : GROUND + Math.random() * 0.3; pPos[i3 + 2] = (Math.random() - 0.5) * 2 - 0.3;
+            const up = pMode === 'confetti' ? 1.6 + Math.random() * 1.8 : pMode === 'sparkle' ? 0.5 + Math.random() * 0.7 : 0.12 + Math.random() * 0.15;
+            pVel[i3] = (Math.random() - 0.5) * (pMode === 'confetti' ? 1.2 : 0.3); pVel[i3 + 1] = up; pVel[i3 + 2] = 0;
+        }
+    }
+    function setParticles(mode) {
+        pMode = mode;
+        const n = Math.round(PCFG[mode].n * (reduceMotion ? 0.3 : 1));
+        for (let i = 0; i < n; i++) spawn(i, true);
+        pGeo.setDrawRange(0, n);
+        pGeo.attributes.color.needsUpdate = true;
+        pMat.size = PCFG[mode].size;
+    }
+    function updateParticles(dt, t) {
+        const n = pGeo.drawRange.count, wet = pMode === 'rain' || pMode === 'storm';
+        for (let i = 0; i < n; i++) {
+            const i3 = i * 3;
+            pPos[i3] += pVel[i3] * dt * motion; pPos[i3 + 1] += pVel[i3 + 1] * dt * motion;
+            if (pMode === 'confetti') { pVel[i3 + 1] -= 0.9 * dt; pPos[i3] += Math.sin(t * 3 + i) * 0.004; }
+            if (pMode === 'dust' || pMode === 'sparkle') pPos[i3] += Math.sin(t * 0.8 + i) * 0.002;
+            const out = wet ? pPos[i3 + 1] < GROUND : (pPos[i3 + 1] > 2.4 || (pMode === 'confetti' && pVel[i3 + 1] < -1.2 && pPos[i3 + 1] < GROUND));
+            if (out) spawn(i, false);
+        }
+        pGeo.attributes.position.needsUpdate = true;
+        if (pMode !== 'dust') pGeo.attributes.color.needsUpdate = true;
+    }
+
+    // ---------- สถานะ & การเปลี่ยนอารมณ์ ----------
+    const cur = { bounce: 0.03, speed: 1.6, arms: 0.1, back: 0, wave: 0, droop: 0, shake: 0, cloud: 0 };
+    let mood = null, target = MOODS.neutral, moodT = 0, phase = 0;
+    const rimTarget = new THREE.Color(target.rim), cloudTarget = new THREE.Color(0x8e98a8);
+    function setMood(key) {
+        if (!MOODS[key] || key === mood) return;
+        mood = key; target = MOODS[key]; moodT = 0;
+        lastFaceKey = '';
+        rimTarget.setHex(target.rim);
+        if (target.cloud) { cloudTarget.setHex(target.cloud); cloud.visible = true; }
+        sweats.forEach(d => d.visible = !!target.sweat);
+        setParticles(target.particles);
+    }
+
+    // มองตามเมาส์/นิ้ว
+    const gaze = new THREE.Vector2(), gazeTarget = new THREE.Vector2();
+    window.addEventListener('pointermove', e => {
+        const r = canvas.getBoundingClientRect();
+        gazeTarget.set(
+            THREE.MathUtils.clamp(((e.clientX - r.left) / r.width) * 2 - 1.3, -1, 1),
+            THREE.MathUtils.clamp(-(((e.clientY - r.top) / r.height) * 2 - 1), -1, 1)
+        );
+    }, { passive: true });
+
+    // แตะ = กระโดดหมุนตัว (ใช้ click เพื่อไม่ชนกับการเลื่อนหน้าจอบนมือถือ)
+    let jumpT = -1;
+    canvas.addEventListener('click', () => {
+        if (jumpT >= 0) return;
+        jumpT = 0;
+        for (let i = 0; i < Math.min(20, pGeo.drawRange.count); i++) {
+            const i3 = i * 3; pPos[i3] = bot.position.x + (Math.random() - 0.5); pPos[i3 + 1] = GROUND + 0.2; pVel[i3 + 1] = 2 + Math.random() * 2;
+        }
+        document.dispatchEvent(new CustomEvent('mascot-poke'));
+    });
+
+    let blinkAt = 2, blinkT = -1, flashCD = 2;
+
+    function resize() {
+        const w = stage.clientWidth, h = stage.clientHeight;
+        if (!w || !h) return;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        const dist = Math.max(1.85 / tanV, 2.35 / (tanV * camera.aspect));
+        camera.position.set(LOOK.x, LOOK.y + 0.75, dist);
+        camera.lookAt(LOOK);
+        camera.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(stage);
+    resize();
+
+    function update(dt, t) {
+        moodT += dt;
+        const k = damp(dt, 5);
+        for (const p of ['bounce', 'speed', 'arms', 'wave', 'back']) cur[p] = lerp(cur[p], target[p] || 0, k);
+        cur.droop = lerp(cur.droop, target.droop || 0, k);
+        cur.shake = lerp(cur.shake, target.shake || 0, k);
+        cur.cloud = lerp(cur.cloud, target.cloud ? 1 : 0, damp(dt, 4));
+        rim.color.lerp(rimTarget, k);
+        cloudMat.color.lerp(cloudTarget, k);
+
+        phase += dt * cur.speed * motion;
+        gaze.lerp(gazeTarget, damp(dt, 6));
+
+        // ตำแหน่ง: ขยับไปซ้ายเมื่อมีกองเหรียญ
+        const baseX = stackCoins.length ? -0.15 : 0.2;
+        bot.position.x = lerp(bot.position.x, baseX, damp(dt, 3));
+        const hop = Math.abs(Math.sin(phase)) * cur.bounce;
+        let jumpY = 0, spin = 0;
+        if (jumpT >= 0) {
+            jumpT += dt / 0.9;
+            const e = Math.min(jumpT, 1);
+            jumpY = Math.sin(Math.PI * e) * 0.5;
+            spin = (1 - Math.pow(1 - e, 3)) * Math.PI * 2;
+            if (jumpT >= 1) jumpT = -1;
+        }
+        bot.position.y = BOT_BASE_Y + hop + jumpY;
+        const shake = cur.shake * motion;
+        bot.position.x += shake ? (Math.random() - 0.5) * shake : 0;
+
+        body.rotation.y = gaze.x * 0.22 + Math.sin(t * 0.7) * 0.1 * motion + spin;
+        body.rotation.x = cur.droop * 0.3;
+        body.rotation.z = Math.sin(phase * 0.5) * cur.bounce * 0.4;
+        const squash = 1 - hop * 0.15;
+        body.scale.set(1 + hop * 0.05, squash, 1);
+
+        // หัว: เอียงคอแบบอนิเมะ + ก้มตอนเศร้า + มองตาม
+        head.rotation.x = cur.droop * 1.6 - gaze.y * 0.12;
+        head.rotation.y = gaze.x * 0.3;
+        head.rotation.z = Math.sin(t * 0.9) * 0.05 * motion + (mood === 'neutral' ? 0.1 : 0);
+        hairBack.rotation.z = Math.sin(phase) * cur.bounce * 0.35;
+        hairBack.rotation.x = 0.04 + Math.abs(Math.sin(phase)) * cur.bounce * 0.4;
+        sideLocks.rotation.z = Math.sin(phase + 0.5) * cur.bounce * 0.25;
+        const leafDroop = mood === 'sad' ? -0.6 : mood === 'panic' ? -0.3 : 0;
+        leafPivot.rotation.z = lerp(leafPivot.rotation.z, leafDroop + Math.sin(phase * 2) * cur.bounce * 1.8 + (mood === 'panic' ? Math.sin(t * 30) * 0.12 : 0), damp(dt, 6));
+
+        // หน้า: กะพริบ + มองตาม (วาด canvas ใหม่เฉพาะตอนมีอะไรเปลี่ยน)
+        blinkAt -= dt;
+        if (blinkAt <= 0 && blinkT < 0) { blinkT = 0; blinkAt = 2.5 + Math.random() * 3; }
+        let blink = 1;
+        if (blinkT >= 0) { blinkT += dt / 0.16; blink = Math.abs(1 - 2 * Math.min(blinkT, 1)); if (blinkT >= 1) blinkT = -1; }
+        const lid = blink < 0.4 ? 0 : (mood === 'neutral' ? 0.82 : mood === 'panic' ? 1.12 : 1);
+        const faceKey = `${mood}|${Math.round(gaze.x * 8)}|${Math.round(gaze.y * 8)}|${lid}`;
+        faceTimer -= dt;
+        if (faceKey !== lastFaceKey || ((mood === 'sad' || mood === 'panic' || mood === 'moon') && faceTimer <= 0)) {
+            lastFaceKey = faceKey; faceTimer = 0.08;
+            drawFace({ mood, blink: lid, gx: gaze.x, gy: gaze.y, t });
+        }
+
+        // แขน: ยกขึ้น + โบกมือ / ไขว้หลังตอนนิ่ง
+        const wave = Math.sin(t * 9 * motion) * cur.wave;
+        arms.forEach(a => a.rotation.x = cur.back);
+        arms[0].rotation.z = -(cur.arms + (mood === 'moon' ? wave * 0.6 : 0)) - (mood === 'panic' ? Math.sin(t * 22) * 0.1 : 0);
+        arms[1].rotation.z = cur.arms + wave + (mood === 'panic' ? Math.sin(t * 22 + 1) * 0.1 : 0);
+
+        sweats.forEach(d => {
+            if (!d.visible) return;
+            d.userData.t = (d.userData.t + dt * 1.3) % 1;
+            const u = d.userData.t, s = d.userData.side;
+            d.position.set(s * (0.4 + u * 0.3), 0.25 + Math.sin(u * Math.PI) * 0.2 - u * 0.25, 0.12);
+        });
+
+        // เมฆ
+        cloud.scale.setScalar(Math.max(0.001, cur.cloud * 0.8));
+        cloud.visible = cur.cloud > 0.01;
+        cloud.position.set(bot.position.x, 2.42 + Math.sin(t * 1.2) * 0.05, -0.35);
+        let flashI = 0;
+        if (target.flash) {
+            flashCD -= dt;
+            if (flashCD <= 0) { flashCD = 1.5 + Math.random() * 2.5; flash.userData.t = 0; }
+            if (flash.userData.t != null) {
+                flash.userData.t += dt;
+                const ft = flash.userData.t;
+                flashI = ft < 0.08 || (ft > 0.14 && ft < 0.2) ? 1 : 0;
+                if (ft > 0.3) flash.userData.t = null;
+            }
+        }
+        flash.intensity = flashI * 25;
+        bolt.material.opacity = flashI;
+
+        // เงา
+        const lift = bot.position.y - BOT_BASE_Y;
+        shadow.position.x = bot.position.x;
+        shadow.scale.setScalar(1 - Math.min(lift, 1) * 0.35);
+        shadowMat.opacity = 1 - Math.min(lift, 1) * 0.5;
+
+        // กองเหรียญ
+        stackCoins.forEach((m, i) => {
+            const u = m.userData;
+            if (m.position.y > u.ty) { u.vy += 9.8 * dt; m.position.y = Math.max(u.ty, m.position.y - u.vy * dt); }
+            if (goalFull && i === stackCoins.length - 1) m.rotation.y += dt * 2;
+        });
+
+        updateParticles(dt, t);
+    }
+
+    // วนลูปเฉพาะตอนการ์ดอยู่บนจอและแท็บเปิดอยู่ (ประหยัดแบต)
+    const clock = new THREE.Clock();
+    let running = false, inView = true, t = 0;
+    function frame() {
+        if (!running) return;
+        requestAnimationFrame(frame);
+        const dt = Math.min(clock.getDelta(), 0.05);
+        t += dt;
+        update(dt, t);
+        renderer.render(scene, camera);
+    }
+    function sync() {
+        const should = inView && document.visibilityState === 'visible';
+        if (should && !running) { running = true; clock.getDelta(); requestAnimationFrame(frame); }
+        else if (!should) running = false;
+    }
+    new IntersectionObserver(([e]) => { inView = e.isIntersecting; sync(); }).observe(stage);
+    document.addEventListener('visibilitychange', sync);
+
+    function apply(s) {
+        if (!s) return;
+        if (s.mood) setMood(s.mood);
+        if ('goalPct' in s) setGoal(s.goalPct);
+    }
+    setMood('neutral');
+    apply(window.__btcMascot);
+    document.addEventListener('btc-mascot', e => apply(e.detail));
+
+    update(0.016, 0); renderer.render(scene, camera);
+    document.getElementById('moodCard').classList.add('mascot-ready');
+    sync();
+}
+
+// ---------------------------------------------------------------- BACKGROUND
+// ฉากหลัง: ดาวฝุ่นทอง + เหรียญลอย + โครงข่ายบล็อกเชน สีเปลี่ยนตามอารมณ์ตลาด
+function initBackground() {
+    const canvas = document.getElementById('bg3d');
+    const renderer = makeRenderer(canvas, { antialias: false, maxDpr: 1.5 });
+    renderer.toneMapping = THREE.NoToneMapping;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+    camera.position.z = 8;
+
+    const small = window.innerWidth < 768;
+    const N = small ? 420 : 800;
+    const pos = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+        pos[i * 3] = (Math.random() - 0.5) * 50;
+        pos[i * 3 + 1] = (Math.random() - 0.5) * 40;
+        pos[i * 3 + 2] = -Math.random() * 40;
+    }
+    const sGeo = new THREE.BufferGeometry(); sGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const sMat = new THREE.PointsMaterial({ size: 0.14, map: dotTexture, color: 0xE2C063, transparent: true, opacity: 0.75, depthWrite: false, blending: THREE.AdditiveBlending });
+    const stars = new THREE.Points(sGeo, sMat); scene.add(stars);
+
+    const net = new THREE.Mesh(new THREE.IcosahedronGeometry(13, 1), new THREE.MeshBasicMaterial({ color: 0xE2C063, wireframe: true, transparent: true, opacity: 0.05 }));
+    net.position.z = -22; scene.add(net);
+
+    const coinTex = coinFaceTexture(true);
+    const coinMat = new THREE.MeshBasicMaterial({ map: coinTex, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide });
+    const coinGeo = new THREE.CircleGeometry(0.9, 40);
+    const coins = [];
+    for (let i = 0; i < (small ? 5 : 9); i++) {
+        const m = new THREE.Mesh(coinGeo, coinMat);
+        m.position.set((Math.random() - 0.5) * 22, (Math.random() - 0.5) * 16, -6 - Math.random() * 14);
+        m.userData = { sp: 0.2 + Math.random() * 0.5, ph: Math.random() * 6, y: m.position.y };
+        scene.add(m); coins.push(m);
+    }
+
+    const tints = { moon: 0xF5D061, happy: 0x9be15d, neutral: 0xE2C063, sad: 0x7fa8ff, panic: 0xff5a5a };
+    const tint = new THREE.Color(0xE2C063);
+    let speedMul = 1;
+    function apply(s) {
+        if (!s || !s.mood) return;
+        tint.setHex(tints[s.mood] || 0xE2C063);
+        speedMul = s.mood === 'panic' ? 3 : s.mood === 'moon' ? 2.2 : s.mood === 'sad' ? 0.6 : 1;
+    }
+    apply(window.__btcMascot);
+    document.addEventListener('btc-mascot', e => apply(e.detail));
+
+    function resize() {
+        renderer.setSize(window.innerWidth, window.innerHeight, false);
+        camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', resize); resize();
+
+    let mx = 0, my = 0;
+    window.addEventListener('pointermove', e => { mx = e.clientX / window.innerWidth - 0.5; my = e.clientY / window.innerHeight - 0.5; }, { passive: true });
+
+    // จำกัด ~30fps เพราะเป็นแค่ฉากหลัง
+    const clock = new THREE.Clock();
+    let acc = 0, t = 0;
+    function frame() {
+        requestAnimationFrame(frame);
+        if (document.visibilityState !== 'visible') return;
+        const dt = Math.min(clock.getDelta(), 0.1);
+        acc += dt;
+        if (acc < 1 / 30) return;
+        const step = acc; acc = 0; t += step * motion * speedMul;
+
+        sMat.color.lerp(tint, damp(step, 1.5));
+        net.material.color.copy(sMat.color);
+        net.rotation.y = t * 0.03; net.rotation.x = t * 0.015;
+        stars.rotation.y = t * 0.006;
+        coins.forEach(c => {
+            c.rotation.y = t * c.userData.sp + c.userData.ph;
+            c.position.y = c.userData.y + Math.sin(t * 0.4 + c.userData.ph) * 0.6;
+        });
+        const scrollY = window.scrollY || 0;
+        camera.position.x = lerp(camera.position.x, mx * 1.2, damp(step, 2));
+        camera.position.y = lerp(camera.position.y, -my * 0.8 - scrollY * 0.003, damp(step, 2));
+        camera.lookAt(0, camera.position.y * 0.5, -10);
+        renderer.render(scene, camera);
+    }
+    canvas.classList.add('ready');
+    frame();
+}
+
+try { initMascot(); } catch (e) { console.warn('Mascot 3D disabled:', e); }
+if (!reduceMotion) { try { initBackground(); } catch (e) { console.warn('3D background disabled:', e); } }
 </script>
 </body>
 </html>
