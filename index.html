@@ -269,24 +269,24 @@
             <div id="moodCard" class="glass-card gold-border overflow-hidden">
                 <div class="grid grid-cols-1 md:grid-cols-5">
                     <div id="mascotStage" class="mood-stage md:col-span-3 relative h-[260px] md:h-[320px]">
-                        <canvas id="mascotCanvas" class="absolute inset-0 w-full h-full" aria-label="มาสคอต 3D น้องบิต แตะเพื่อเล่นด้วย"></canvas>
-                        <div id="mascotFallback" class="absolute inset-0 flex items-center justify-center text-7xl pointer-events-none select-none">🪙</div>
+                        <canvas id="mascotCanvas" class="absolute inset-0 w-full h-full" aria-label="มาสคอต 3D ส้มจี๊ด แตะเพื่อเล่นด้วย"></canvas>
+                        <div id="mascotFallback" class="absolute inset-0 flex items-center justify-center text-7xl pointer-events-none select-none">🍊</div>
                         <div class="absolute top-3 left-3 flex items-center gap-1.5 bg-black/40 border border-white/10 rounded-full px-3 py-1 backdrop-blur-md text-[10px] font-num tracking-widest uppercase text-gray-300 pointer-events-none">
-                            <span id="moodEmoji">🪙</span> <span id="moodLabel">Loading</span>
+                            <span id="moodEmoji">🍊</span> <span id="moodLabel">Loading</span>
                         </div>
                         <button id="moodDemoBtn" type="button" title="ลองดูทุกอารมณ์" class="absolute top-3 right-3 h-7 px-2.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all text-[10px] flex items-center gap-1">
                             <i class="fas fa-masks-theater"></i> <span id="moodDemoText">Preview</span>
                         </button>
-                        <p class="absolute bottom-2 left-0 right-0 text-center text-[9px] text-gray-600 tracking-widest uppercase pointer-events-none">แตะน้องบิตเพื่อแหย่เล่น</p>
+                        <p class="absolute bottom-2 left-0 right-0 text-center text-[9px] text-gray-600 tracking-widest uppercase pointer-events-none">แตะส้มจี๊ดเพื่อแหย่เล่น</p>
                     </div>
                     <div class="md:col-span-2 p-5 md:pl-2 flex flex-col justify-center gap-4">
                         <div>
                             <h3 class="text-xs tracking-[0.15em] text-gray-400 uppercase flex items-center gap-2 mb-2">
-                                <i class="fas fa-face-smile-beam text-gold-400"></i> น้องบิต Mood
+                                <span class="text-sm leading-none">🍊</span> ส้มจี๊ด Mood
                             </h3>
                             <p id="moodTitle" class="text-xl md:text-2xl font-bold text-white">กำลังเช็คกราฟ...</p>
                         </div>
-                        <div id="moodSpeech" class="speech-bubble px-4 py-3 text-sm text-gray-200 leading-relaxed">รอแป๊บ ขอดูราคาก่อนว่าวันนี้ต้องยิ้มหรือร้องไห้</div>
+                        <div id="moodSpeech" class="speech-bubble px-4 py-3 text-sm text-gray-200 leading-relaxed">รอแป๊บค่ะ ส้มจี๊ดขอดูราคาก่อนว่าวันนี้ต้องยิ้มหรือร้องไห้</div>
                         <div>
                             <div class="flex justify-between items-end mb-1.5">
                                 <span class="text-[10px] text-gray-500 uppercase tracking-[0.15em]">BTC 24H</span>
@@ -816,20 +816,20 @@ function renderSummary() {
     renderMood();
 }
 
-// --- 3D Mascot Mood (น้องบิต) ---
+// --- 3D Mascot Mood (ส้มจี๊ด) ---
 // อารมณ์ของมาสคอตอิงจาก % เปลี่ยนแปลง 24 ชม. ของ BTC ส่วนฉาก 3D อยู่ใน module script ด้านล่าง
 const MOOD_ORDER = ['moon', 'happy', 'neutral', 'sad', 'panic'];
 const MOOD_INFO = {
     moon:    { emoji: '🚀', label: 'To the Moon', title: 'ขึ้นแรงจนหัวหมุน!', glow: 'rgba(245,208,97,0.30)', color: 'text-gold-400',
-               lines: ['ขึ้นแรงขนาดนี้ อย่าเพิ่งเขียนใบลาออกนะ 🚀', 'กราฟเขียวจนตาลาย ขอใส่แว่นกันแดดแป๊บ 😎', 'วันนี้ใครๆ ก็เป็นเซียน... เดี๋ยวก็รู้ว่าใครแค่ฟลุ๊ค', 'ดอยเก่ายังไม่ทันลง ดอยใหม่ก็มาแล้วจ้า'] },
+               lines: ['ขึ้นแรงขนาดนี้ อย่าเพิ่งเขียนใบลาออกนะคะเบียร์ 🚀', 'กราฟเขียวจนตาลาย ส้มจี๊ดขอใส่แว่นกันแดดแป๊บค่ะ 😎', 'วันนี้ใครๆ ก็เป็นเซียนค่ะ... เดี๋ยวก็รู้ว่าใครแค่ฟลุ๊ค', 'ดอยเก่ายังไม่ทันลง ดอยใหม่ก็มาแล้วค่ะ'] },
     happy:   { emoji: '😊', label: 'Bullish', title: 'เขียวกำลังดี ยิ้มได้', glow: 'rgba(76,175,80,0.22)', color: 'text-success',
-               lines: ['เขียวนิดๆ พอให้ยิ้มได้ แต่อย่าเพิ่งไปอวดใคร', 'DCA ต่อไปค่ะ อย่าเพิ่งเหลิง', 'พอร์ตยิ้ม เจ้าของพอร์ตก็ยิ้ม แต่เงินเดือนยังเท่าเดิมนะ', 'ขึ้นแค่นี้อย่าเพิ่งซื้อไล่ราคาล่ะ ใจเย็นๆ'] },
+               lines: ['เขียวนิดๆ พอให้ยิ้มได้ แต่อย่าเพิ่งไปอวดใครนะคะ', 'DCA ต่อไปค่ะ อย่าเพิ่งเหลิง', 'พอร์ตยิ้ม เจ้าของพอร์ตก็ยิ้ม แต่เงินเดือนยังเท่าเดิมนะคะ', 'ขึ้นแค่นี้อย่าเพิ่งซื้อไล่ราคานะคะ ใจเย็นๆ'] },
     neutral: { emoji: '😐', label: 'Sideways', title: 'นิ่ง... นิ่งมาก', glow: 'rgba(156,163,175,0.16)', color: 'text-gray-300',
-               lines: ['นิ่งยิ่งกว่าเงินเดือนที่ขึ้นปีละครั้ง', 'ไซด์เวย์แบบนี้ เหมาะกับการไปทำงานจริงๆ บ้าง', 'ไม่ขึ้นไม่ลง เหมือนชีวิตวัยทำงานเป๊ะ 😐', 'ตลาดหลับ เราก็ DCA เงียบๆ ไปละกัน'] },
+               lines: ['นิ่งยิ่งกว่าเงินเดือนที่ขึ้นปีละครั้งอีกค่ะ', 'ไซด์เวย์แบบนี้ ไปทำงานจริงๆ บ้างเถอะค่ะ', 'ไม่ขึ้นไม่ลง เหมือนชีวิตวัยทำงานเป๊ะเลยค่ะ 😐', 'ตลาดหลับ เราก็ DCA เงียบๆ ไปค่ะ'] },
     sad:     { emoji: '🥲', label: 'Bearish', title: 'แดงนิดหน่อย อย่าเพิ่งร้อง', glow: 'rgba(96,165,250,0.18)', color: 'text-orange-400',
-               lines: ['แดงนิดหน่อย ถือว่าลดราคาให้ซื้อเพิ่มละกัน', 'อย่าเพิ่งร้อง... เก็บน้ำตาไว้ตอนลง 50% ทีเดียว 🥲', 'DCA มีไว้สำหรับวันแบบนี้แหละ ไม่ต้องเปิดดูทุกห้านาที', 'ลงแค่นี้ไม่ตายหรอก แต่ใจน้องบิตบางมาก'] },
+               lines: ['แดงนิดหน่อย ถือว่าลดราคาให้ซื้อเพิ่มละกันค่ะ', 'อย่าเพิ่งร้องค่ะ... เก็บน้ำตาไว้ตอนลง 50% ทีเดียว 🥲', 'DCA มีไว้สำหรับวันแบบนี้แหละค่ะ เลิกเปิดดูทุกห้านาทีได้แล้ว', 'ลงแค่นี้ไม่ตายหรอกค่ะ แต่ใจส้มจี๊ดเปรี้ยวจี๊ดเลย'] },
     panic:   { emoji: '😱', label: 'Panic', title: 'ดอยถล่ม! ตั้งสติก่อน', glow: 'rgba(255,77,77,0.28)', color: 'text-danger',
-               lines: ['ดอยถล่ม! ใครบอกว่าใจเพชร ออกมาคุยกันหน่อย 😱', 'ปิดแอปแล้วไปนอนเถอะ เชื่อน้องบิต', 'คนกล้าซื้อตอนนี้คือเศรษฐีในอนาคต... หรือไม่ก็คนดอยรุ่นใหม่', 'ใจเย็นๆ อย่ากดขายตอนตกใจ เดี๋ยวโดนหัวเราะใส่'] }
+               lines: ['ดอยถล่มค่ะ! ใครบอกว่าใจเพชร ออกมาคุยกันหน่อย 😱', 'ปิดแอปแล้วไปนอนเถอะค่ะ เชื่อส้มจี๊ด', 'คนกล้าซื้อตอนนี้คือเศรษฐีในอนาคตค่ะ... หรือไม่ก็คนดอยรุ่นใหม่', 'อย่ากดขายตอนตกใจนะคะ เดี๋ยวส้มจี๊ดหัวเราะใส่'] }
 };
 let moodPreview = null, moodPreviewTimer = null, lastMoodKey = null, lastLineIdx = -1;
 
@@ -1183,7 +1183,7 @@ async function initializeApp() {
     
     document.getElementById('date').valueAsDate = new Date();
     fetchBlockHeight(); setInterval(fetchBlockHeight, 60000);
-    // อัปเดตราคาเงียบๆ ทุก 60 วินาที ให้อารมณ์น้องบิตตามตลาดจริง (ข้ามตอนแท็บถูกซ่อน)
+    // อัปเดตราคาเงียบๆ ทุก 60 วินาที ให้อารมณ์ส้มจี๊ดตามตลาดจริง (ข้ามตอนแท็บถูกซ่อน)
     setInterval(async () => {
         if (document.visibilityState !== 'visible' || !isDataLoaded) return;
         try {
@@ -1332,48 +1332,84 @@ function initMascot() {
 
     // Materials
     const gold = new THREE.MeshStandardMaterial({ color: 0xE2B850, metalness: 0.9, roughness: 0.28 });
-    const faceFront = new THREE.MeshStandardMaterial({ map: coinFaceTexture(false), metalness: 0.55, roughness: 0.38 });
+    const peelTex = canvasTexture(512, 256, (g, w, h) => {
+        g.fillStyle = '#ff8a1c'; g.fillRect(0, 0, w, h);
+        for (let i = 0; i < 2600; i++) {
+            const x = Math.random() * w, y = Math.random() * h, r = 0.8 + Math.random() * 1.6;
+            g.fillStyle = Math.random() < 0.6 ? 'rgba(196,84,0,0.35)' : 'rgba(255,190,90,0.35)';
+            g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+        }
+    });
+    const peel = new THREE.MeshStandardMaterial({ map: peelTex, bumpMap: peelTex, bumpScale: 0.6, roughness: 0.5, metalness: 0 });
+    const peelDark = new THREE.MeshStandardMaterial({ color: 0xe5670f, roughness: 0.5 });
+    const leafMat = new THREE.MeshStandardMaterial({ color: 0x3fae4a, roughness: 0.45 });
+    const stemMat = new THREE.MeshStandardMaterial({ color: 0x5a3d1e, roughness: 0.8 });
     const faceBack = new THREE.MeshStandardMaterial({ map: coinFaceTexture(true), metalness: 0.55, roughness: 0.38 });
     const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25 });
     const black = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.15, metalness: 0.2 });
     const browMat = new THREE.MeshStandardMaterial({ color: 0x4a3412, roughness: 0.6 });
-    const mouthMat = new THREE.MeshStandardMaterial({ color: 0x3a1a10, roughness: 0.5 });
+    const mouthMat = new THREE.MeshStandardMaterial({ color: 0x7a1f1f, roughness: 0.5 });
     const mouthInner = new THREE.MeshBasicMaterial({ color: 0x4a0f12 });
     const tongueMat = new THREE.MeshBasicMaterial({ color: 0xff6b7d });
-    const shoeMat = new THREE.MeshStandardMaterial({ color: 0x272a35, roughness: 0.5 });
+    const shoeMat = new THREE.MeshStandardMaterial({ color: 0xe0577a, roughness: 0.45 });
     const glassMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, metalness: 0.6, roughness: 0.08 });
     const dropMat = new THREE.MeshStandardMaterial({ color: 0x8fd3ff, roughness: 0.05, transparent: true, opacity: 0.85 });
 
     const bot = new THREE.Group(); scene.add(bot);       // ตำแหน่ง/กระโดด
     const body = new THREE.Group(); bot.add(body);       // หมุน/เอียงตามอารมณ์
 
-    // ตัวเหรียญ
-    const coin = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.3, 72), [gold, faceFront, faceBack]);
-    coin.rotation.x = Math.PI / 2; body.add(coin);
-    const rimGeo = new THREE.TorusGeometry(0.97, 0.065, 16, 90);
-    [0.15, -0.15].forEach(z => { const r = new THREE.Mesh(rimGeo, gold); r.position.z = z; body.add(r); });
+    // ตัวส้มจี๊ด: ลูกส้มทรงกลม แบนหน้า-หลังเล็กน้อยให้หน้าดูน่ารัก
+    const SZ = 0.82;
+    const surfZ = (x, y) => SZ * Math.sqrt(Math.max(0, 1 - x * x - y * y));
+    const stickOn = (m, x, y, off = 0.01) => {   // แปะชิ้นส่วนบนผิวส้ม หันตามแนวผิว
+        m.position.set(x, y, surfZ(x, y) + off);
+        m.lookAt(x * 3, y * 3, (surfZ(x, y) / (SZ * SZ)) * 3);
+        body.add(m); return m;
+    };
+    const orange = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), peel);
+    orange.scale.z = SZ; body.add(orange);
+
+    // ก้าน + ใบ (ใบเหี่ยวตอนตลาดแดง)
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.055, 0.18, 10), stemMat);
+    stem.position.y = 1.02; body.add(stem);
+    const leafPivot = new THREE.Group(); leafPivot.position.y = 1.06; leafPivot.rotation.x = 0.75; body.add(leafPivot);
+    const leafGeo = new THREE.SphereGeometry(0.3, 20, 12);
+    const leaf1 = new THREE.Mesh(leafGeo, leafMat); leaf1.scale.set(1.15, 0.12, 0.5); leaf1.position.x = 0.31; leaf1.rotation.z = 0.35;
+    const leaf2 = new THREE.Mesh(leafGeo, leafMat); leaf2.scale.set(0.7, 0.1, 0.32); leaf2.position.set(-0.18, 0.02, 0.05); leaf2.rotation.set(0, 0.5, -0.45);
+    leafPivot.add(leaf1, leaf2);
+
+    // กิ๊บเหรียญ ₿
+    const clipGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.045, 32); clipGeo.rotateX(Math.PI / 2);
+    stickOn(new THREE.Mesh(clipGeo, [gold, faceBack, gold]), -0.56, 0.68, 0.03);
 
     // ตา
     const eyes = [], pupils = [];
     [-0.33, 0.33].forEach(x => {
-        const eye = new THREE.Group(); eye.position.set(x, 0.2, 0.17);
+        const eye = new THREE.Group(); eye.position.set(x, 0.2, surfZ(x, 0.2) - 0.01);
         const w = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 16), white); w.scale.z = 0.45;
         const pg = new THREE.Group(); pg.position.z = 0.07;
         const p = new THREE.Mesh(new THREE.SphereGeometry(0.11, 24, 12), black); p.scale.z = 0.5;
         const sh = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
         sh.position.set(0.04, 0.05, 0.05);
         pg.add(p, sh); eye.add(w, pg); body.add(eye);
+        // ขนตางอนๆ ด้านนอกของตา
+        [0.62, 0.8, 1.0].forEach(f => {
+            const a = x < 0 ? Math.PI * f : Math.PI * (1 - f);
+            const lash = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.1, 0.02), black);
+            lash.position.set(Math.cos(a) * 0.22, Math.sin(a) * 0.22, 0.03); lash.rotation.z = a - Math.PI / 2;
+            eye.add(lash);
+        });
         eyes.push(eye); pupils.push(pg);
     });
 
     // คิ้ว
     const brows = [-0.33, 0.33].map(x => {
         const b = new THREE.Mesh(new THREE.BoxGeometry(0.27, 0.055, 0.05), browMat);
-        b.position.set(x, 0.5, 0.18); body.add(b); return b;
+        b.position.set(x, 0.5, surfZ(x, 0.5) + 0.02); b.scale.y = 0.75; body.add(b); return b;
     });
 
     // ปาก (สร้างไว้ทุกแบบแล้วสลับการแสดงผล)
-    const mouth = new THREE.Group(); mouth.position.set(0, -0.28, 0.17); body.add(mouth);
+    const mouth = new THREE.Group(); mouth.position.set(0, -0.28, surfZ(0, -0.28) + 0.01); mouth.rotation.x = 0.3; body.add(mouth);
     const arcGeo = new THREE.TorusGeometry(0.2, 0.04, 12, 32, Math.PI);
     const mouths = {
         smile: new THREE.Mesh(arcGeo, mouthMat),
@@ -1402,7 +1438,7 @@ function initMascot() {
 
     // แก้มแดง
     const cheekMat = new THREE.MeshBasicMaterial({ color: 0xff7a8a, transparent: true, opacity: 0, depthWrite: false });
-    [-0.62, 0.62].forEach(x => { const c = new THREE.Mesh(new THREE.CircleGeometry(0.12, 24), cheekMat); c.position.set(x, -0.1, 0.152); body.add(c); });
+    [-0.6, 0.6].forEach(x => stickOn(new THREE.Mesh(new THREE.CircleGeometry(0.13, 24), cheekMat), x, -0.08, 0.012));
 
     // แว่นกันแดด (ตอนพุ่งไปดวงจันทร์)
     const glasses = new THREE.Group();
@@ -1410,12 +1446,12 @@ function initMascot() {
         const l = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.26, 0.05), glassMat); l.position.x = x; glasses.add(l);
     });
     const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.05, 0.04), glassMat); bridge.position.y = 0.06; glasses.add(bridge);
-    glasses.position.set(0, 0.22, 0.3); glasses.visible = false; body.add(glasses);
+    glasses.position.set(0, 0.22, surfZ(0.34, 0.22) + 0.1); glasses.visible = false; body.add(glasses);
 
     // แขน
     const arms = [-1, 1].map(side => {
         const pivot = new THREE.Group(); pivot.position.set(side * 0.98, -0.05, 0);
-        const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.065, 0.42, 4, 12), gold); arm.position.y = -0.3;
+        const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.065, 0.42, 4, 12), peelDark); arm.position.y = -0.3;
         const hand = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 12), white); hand.position.y = -0.6;
         pivot.add(arm, hand); body.add(pivot); return pivot;
     });
@@ -1423,7 +1459,7 @@ function initMascot() {
     // ขา
     [-0.34, 0.34].forEach(x => {
         const g = new THREE.Group(); g.position.set(x, -0.95, 0);
-        const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.2, 4, 10), gold); leg.position.y = -0.12;
+        const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.2, 4, 10), peelDark); leg.position.y = -0.12;
         const shoe = new THREE.Mesh(new THREE.SphereGeometry(0.16, 20, 12), shoeMat); shoe.scale.set(1, 0.55, 1.4); shoe.position.set(0, -0.3, 0.07);
         g.add(leg, shoe); body.add(g);
     });
@@ -1643,12 +1679,17 @@ function initMascot() {
         arms[0].rotation.z = -(cur.arms + (mood === 'moon' ? wave * 0.6 : 0)) - (mood === 'panic' ? Math.sin(t * 22) * 0.12 : 0);
         arms[1].rotation.z = cur.arms + wave + (mood === 'panic' ? Math.sin(t * 22 + 1) * 0.12 : 0);
 
+        // ใบส้ม: ดุ๊กดิ๊กตอนดีใจ เหี่ยวตอนเศร้า
+        const leafDroop = mood === 'sad' ? -0.55 : mood === 'panic' ? -0.3 : 0;
+        leafPivot.rotation.z = lerp(leafPivot.rotation.z, leafDroop + Math.sin(phase * 2) * cur.bounce * 1.5 + (mood === 'panic' ? Math.sin(t * 30) * 0.1 : 0), damp(dt, 6));
+
         // น้ำตา / เหงื่อ
         tears.forEach(d => {
             if (!d.visible) return;
             d.userData.t = (d.userData.t + dt * 0.7) % 1;
             const u = d.userData.t;
-            d.position.set(d.userData.x + (d.userData.x > 0 ? 0.08 : -0.08), 0.02 - u * 0.95, 0.24);
+            const tx = d.userData.x + (d.userData.x > 0 ? 0.08 : -0.08), ty = 0.02 - u * 0.95;
+            d.position.set(tx, ty, surfZ(tx, ty) + 0.05);
             d.material.opacity = 0.85;
         });
         sweats.forEach(d => {
