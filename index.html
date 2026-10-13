@@ -1320,7 +1320,7 @@ function initMascot() {
     scene.environment = makeEnvironment(renderer);
 
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 50);
-    const LOOK = new THREE.Vector3(0.25, 0.45, 0);
+    const LOOK = new THREE.Vector3(0.25, 0.62, 0);
     const GROUND = -1.17;
 
     // Lights
@@ -1496,8 +1496,20 @@ function initMascot() {
     });
     const hairBack = outline(new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.9, 6, 20), hair), 1.03);
     hairBack.scale.set(1.45, 1, 0.42); hairBack.position.set(0, -0.62, -0.32); head.add(hairBack);
-    const ahoge = outline(new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.03, 8, 20, Math.PI * 0.85), hair), 1.1);
-    ahoge.position.set(-0.08, HR - 0.02, 0.02); ahoge.rotation.set(0, 0.3, 0.2); head.add(ahoge);
+
+    // ก้าน + ใบส้มบนหัว (เสาอากาศอารมณ์: ดุ๊กดิ๊กตอนเขียว เหี่ยวตอนแดง)
+    const stemMat = toon(0x6b4a26);
+    const stem = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, 0.12, 10), stemMat), 1.15);
+    stem.position.y = HR + 0.08; head.add(stem);
+    const leafPivot = new THREE.Group(); leafPivot.position.y = HR + 0.13; leafPivot.rotation.x = 0.95; leafPivot.scale.setScalar(1.35); head.add(leafPivot);
+    const leafGeo = new THREE.SphereGeometry(0.2, 20, 12);
+    const leafVeinMat = new THREE.MeshBasicMaterial({ color: 0x2a7a35 });
+    [[0.2, 0, 0.35, 1, 0], [-0.13, 0.01, -0.5, 0.7, 0.6]].forEach(([x, y, rz, sc, ry]) => {
+        const g = new THREE.Group(); g.position.set(x, y, 0); g.rotation.set(0, ry, rz); g.scale.setScalar(sc);
+        const leaf = outline(new THREE.Mesh(leafGeo, leafMat), 1.08); leaf.scale.set(1, 0.14, 0.48);
+        const vein = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.012, 0.012), leafVeinMat); vein.position.y = 0.03;
+        g.add(leaf, vein); leafPivot.add(g);
+    });
 
     // กิ๊บลูกส้ม (เอกลักษณ์ส้มจี๊ด) + กิ๊บเหรียญ ₿
     const clip = new THREE.Group();
@@ -1579,7 +1591,7 @@ function initMascot() {
         const cx = bot.position.x;
         if (pMode === 'rain' || pMode === 'storm') {
             const spread = pMode === 'storm' ? 1.5 : 0.75;
-            pPos[i3] = cx + (Math.random() - 0.5) * spread * 2; pPos[i3 + 1] = initial ? lerp(GROUND, 1.9, Math.random()) : 1.95; pPos[i3 + 2] = (Math.random() - 0.5) * 0.8;
+            pPos[i3] = cx + (Math.random() - 0.5) * spread * 2; pPos[i3 + 1] = initial ? lerp(GROUND, 2.15, Math.random()) : 2.2; pPos[i3 + 2] = (Math.random() - 0.5) * 0.8;
             pVel[i3] = pMode === 'storm' ? -0.8 : 0; pVel[i3 + 1] = -(pMode === 'storm' ? 6 + Math.random() * 2 : 3.5 + Math.random()); pVel[i3 + 2] = 0;
         } else {
             pPos[i3] = (Math.random() - 0.5) * 6; pPos[i3 + 1] = initial ? lerp(GROUND, 2.2, Math.random()) : GROUND + Math.random() * 0.3; pPos[i3 + 2] = (Math.random() - 0.5) * 2 - 0.3;
@@ -1706,6 +1718,8 @@ function initMascot() {
         head.rotation.y = gaze.x * 0.25;
         head.rotation.z = Math.sin(t * 0.9) * 0.05 * motion + (mood === 'neutral' ? 0.08 : 0);
         hairBack.rotation.z = Math.sin(phase) * cur.bounce * 0.5;
+        const leafDroop = mood === 'sad' ? -0.6 : mood === 'panic' ? -0.3 : 0;
+        leafPivot.rotation.z = lerp(leafPivot.rotation.z, leafDroop + Math.sin(phase * 2) * cur.bounce * 1.8 + (mood === 'panic' ? Math.sin(t * 30) * 0.12 : 0), damp(dt, 6));
 
         // ตา: กะพริบ + มองตาม
         blinkAt -= dt;
@@ -1750,7 +1764,7 @@ function initMascot() {
         // เมฆ
         cloud.scale.setScalar(Math.max(0.001, cur.cloud * 0.8));
         cloud.visible = cur.cloud > 0.01;
-        cloud.position.set(bot.position.x, 2.12 + Math.sin(t * 1.2) * 0.05, 0.1);
+        cloud.position.set(bot.position.x, 2.36 + Math.sin(t * 1.2) * 0.05, 0.1);
         let flashI = 0;
         if (target.flash) {
             flashCD -= dt;
