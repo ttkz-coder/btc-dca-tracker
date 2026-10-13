@@ -1305,9 +1305,9 @@ function makeEnvironment(renderer) {
 // ค่าพารามิเตอร์อารมณ์ของตัวละคร (ฝั่งข้อความอยู่ใน MOOD_INFO ของ script หลัก)
 const MOODS = {
     moon:    { bounce: 0.24, speed: 7.5, brow: 0,     browY: 0.08, arms: 2.75, wave: 0.45, mouth: 'grin',   rim: 0xffcf4d, eye: 1.1,  particles: 'confetti', glasses: true, cheeks: true },
-    happy:   { bounce: 0.11, speed: 4.2, brow: -0.05, browY: 0.05, arms: 0.9,  wave: 0.9,  mouth: 'smile',  rim: 0x63e07f, eye: 1.0,  particles: 'sparkle',  cheeks: true },
-    neutral: { bounce: 0.03, speed: 1.6, brow: 0,     browY: 0,    arms: 0.22, wave: 0,    mouth: 'flat',   rim: 0xc3c9d4, eye: 0.92, particles: 'dust' },
-    sad:     { bounce: 0.012,speed: 1.0, brow: 0.38,  browY: -0.02,arms: 0.1,  wave: 0,    mouth: 'frown',  rim: 0x5b9cff, eye: 0.85, particles: 'rain',  cloud: 0x8e98a8, tears: true, droop: 0.16 },
+    happy:   { bounce: 0.11, speed: 4.2, brow: -0.05, browY: 0.05, arms: 0.9,  wave: 0.9,  mouth: 'smile',  rim: 0x63e07f, eye: 1.0,  particles: 'sparkle',  cheeks: true, eyes: 'happy' },
+    neutral: { bounce: 0.03, speed: 1.6, brow: 0,     browY: 0,    arms: 0.25, wave: 0,    mouth: 'flat',   rim: 0xc3c9d4, eye: 0.92, particles: 'dust' },
+    sad:     { bounce: 0.012,speed: 1.0, brow: 0.38,  browY: -0.02,arms: 0.18, wave: 0,    mouth: 'frown',  rim: 0x5b9cff, eye: 0.85, particles: 'rain',  cloud: 0x8e98a8, tears: true, droop: 0.16 },
     panic:   { bounce: 0.05, speed: 15,  brow: 0.6,   browY: 0.1,  arms: 2.95, wave: 0.3,  mouth: 'scream', rim: 0xff4646, eye: 1.28, particles: 'storm', cloud: 0x3f4552, sweat: true, shake: 0.045, flash: true },
 };
 
@@ -1320,101 +1320,128 @@ function initMascot() {
     scene.environment = makeEnvironment(renderer);
 
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 50);
-    const LOOK = new THREE.Vector3(0.25, 0.2, 0);
+    const LOOK = new THREE.Vector3(0.25, 0.45, 0);
     const GROUND = -1.17;
 
     // Lights
-    scene.add(new THREE.HemisphereLight(0xfff3d6, 0x1a1a2e, 0.7));
-    const key = new THREE.DirectionalLight(0xffffff, 1.7); key.position.set(3, 4, 5); scene.add(key);
+    scene.add(new THREE.HemisphereLight(0xfff3d6, 0x4a3a50, 0.85));
+    const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(3, 4, 5); scene.add(key);
     const rim = new THREE.DirectionalLight(0xc3c9d4, 2.4); rim.position.set(-4, 2.5, -3); scene.add(rim);
-    const fill = new THREE.PointLight(0xc3c9d4, 4, 8); fill.position.set(1.5, 0.5, 3); scene.add(fill);
+    const fill = new THREE.PointLight(0xfff0e6, 2, 8); fill.position.set(1.5, 0.5, 3); scene.add(fill);
     const flash = new THREE.PointLight(0xdfe8ff, 0, 12); flash.position.set(-0.3, 2.6, 1.5); scene.add(flash);
 
-    // Materials
+    // Materials: cel-shading แบบอนิเมะ (MeshToonMaterial + เส้นขอบ inverted hull)
     const gold = new THREE.MeshStandardMaterial({ color: 0xE2B850, metalness: 0.9, roughness: 0.28 });
-    const peelTex = canvasTexture(512, 256, (g, w, h) => {
-        g.fillStyle = '#ff8a1c'; g.fillRect(0, 0, w, h);
-        for (let i = 0; i < 2600; i++) {
-            const x = Math.random() * w, y = Math.random() * h, r = 0.8 + Math.random() * 1.6;
-            g.fillStyle = Math.random() < 0.6 ? 'rgba(196,84,0,0.35)' : 'rgba(255,190,90,0.35)';
-            g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
-        }
-    });
-    const peel = new THREE.MeshStandardMaterial({ map: peelTex, bumpMap: peelTex, bumpScale: 0.6, roughness: 0.5, metalness: 0 });
-    const peelDark = new THREE.MeshStandardMaterial({ color: 0xe5670f, roughness: 0.5 });
-    const leafMat = new THREE.MeshStandardMaterial({ color: 0x3fae4a, roughness: 0.45 });
-    const stemMat = new THREE.MeshStandardMaterial({ color: 0x5a3d1e, roughness: 0.8 });
     const faceBack = new THREE.MeshStandardMaterial({ map: coinFaceTexture(true), metalness: 0.55, roughness: 0.38 });
-    const white = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25 });
-    const black = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.15, metalness: 0.2 });
-    const browMat = new THREE.MeshStandardMaterial({ color: 0x4a3412, roughness: 0.6 });
-    const mouthMat = new THREE.MeshStandardMaterial({ color: 0x7a1f1f, roughness: 0.5 });
-    const mouthInner = new THREE.MeshBasicMaterial({ color: 0x4a0f12 });
-    const tongueMat = new THREE.MeshBasicMaterial({ color: 0xff6b7d });
-    const shoeMat = new THREE.MeshStandardMaterial({ color: 0xe0577a, roughness: 0.45 });
+    const toonGrad = new THREE.DataTexture(new Uint8Array([90, 170, 255]), 3, 1, THREE.RedFormat);
+    toonGrad.minFilter = toonGrad.magFilter = THREE.NearestFilter; toonGrad.needsUpdate = true;
+    const toon = color => new THREE.MeshToonMaterial({ color, gradientMap: toonGrad });
+    const skin = toon(0xffd6c2), hair = toon(0xf7a3c6), hairDark = toon(0xc45a87), tank = toon(0xff7a1f),
+          denim = toon(0x4d76b4), shoeMat = toon(0xffffff), orangeMat = toon(0xff8a1c), leafMat = toon(0x3fae4a);
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0x3a1626, side: THREE.BackSide });
+    const outline = (m, s = 1.04) => { const o = new THREE.Mesh(m.geometry, lineMat); o.scale.setScalar(s); m.add(o); return m; };
+    const mouthMat = new THREE.MeshBasicMaterial({ color: 0x8a2a35 });
+    const mouthInner = new THREE.MeshBasicMaterial({ color: 0x6a1622 });
+    const tongueMat = new THREE.MeshBasicMaterial({ color: 0xff7d8c });
     const glassMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, metalness: 0.6, roughness: 0.08 });
     const dropMat = new THREE.MeshStandardMaterial({ color: 0x8fd3ff, roughness: 0.05, transparent: true, opacity: 0.85 });
 
-    const bot = new THREE.Group(); scene.add(bot);       // ตำแหน่ง/กระโดด
-    const body = new THREE.Group(); bot.add(body);       // หมุน/เอียงตามอารมณ์
+    const bot = new THREE.Group(); bot.scale.setScalar(1.12); scene.add(bot);   // ตำแหน่ง/กระโดด
+    const body = new THREE.Group(); bot.add(body);                             // หมุน/เอียงตามอารมณ์
 
-    // ตัวส้มจี๊ด: ลูกส้มทรงกลม แบนหน้า-หลังเล็กน้อยให้หน้าดูน่ารัก
-    const SZ = 0.82;
-    const surfZ = (x, y) => SZ * Math.sqrt(Math.max(0, 1 - x * x - y * y));
-    const stickOn = (m, x, y, off = 0.01) => {   // แปะชิ้นส่วนบนผิวส้ม หันตามแนวผิว
-        m.position.set(x, y, surfZ(x, y) + off);
-        m.lookAt(x * 3, y * 3, (surfZ(x, y) / (SZ * SZ)) * 3);
-        body.add(m); return m;
-    };
-    const orange = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), peel);
-    orange.scale.z = SZ; body.add(orange);
+    // ---- ลำตัว: เสื้อกล้ามส้ม + กางเกงยีนส์ขาสั้น ----
+    const torso = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.345, 0.55, 32), tank)); torso.position.y = -0.05; body.add(torso);
+    const logoTex = canvasTexture(256, 128, (g, w, h) => {
+        g.font = '900 62px Inter, "Arial Black", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.lineJoin = 'round'; g.lineWidth = 10; g.strokeStyle = '#2f3b3a'; g.strokeText('HODL', w * 0.42, h / 2);
+        g.fillStyle = '#8fd8cb'; g.fillText('HODL', w * 0.42, h / 2);
+        g.beginPath(); [[206, 18], [236, 18], [220, 54], [248, 54], [192, 116], [208, 68], [182, 68]].forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath();
+        g.lineWidth = 5; g.stroke(); g.fillStyle = '#ffe14d'; g.fill();
+    });
+    const logo = new THREE.Mesh(new THREE.CylinderGeometry(0.284, 0.332, 0.24, 24, 1, true, -0.8, 1.6), new THREE.MeshBasicMaterial({ map: logoTex, transparent: true, depthWrite: false }));
+    logo.position.y = -0.03; body.add(logo);
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.085, 0.18, 16), skin); neck.position.y = 0.28; body.add(neck);
+    const shorts = outline(new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.37, 0.26, 32), denim)); shorts.position.y = -0.42; body.add(shorts);
+    [-0.14, 0.14].forEach(x => {
+        const leg = outline(new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.42, 4, 12), skin)); leg.position.set(x, -0.75, 0); body.add(leg);
+        const shoe = outline(new THREE.Mesh(new THREE.SphereGeometry(0.11, 20, 12), shoeMat), 1.08); shoe.scale.set(1, 0.6, 1.45); shoe.position.set(x, -1.06, 0.05); body.add(shoe);
+    });
+    const BOT_BASE_Y = GROUND + 1.126 * 1.12;
 
-    // ก้าน + ใบ (ใบเหี่ยวตอนตลาดแดง)
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.055, 0.18, 10), stemMat);
-    stem.position.y = 1.02; body.add(stem);
-    const leafPivot = new THREE.Group(); leafPivot.position.y = 1.06; leafPivot.rotation.x = 0.75; body.add(leafPivot);
-    const leafGeo = new THREE.SphereGeometry(0.3, 20, 12);
-    const leaf1 = new THREE.Mesh(leafGeo, leafMat); leaf1.scale.set(1.15, 0.12, 0.5); leaf1.position.x = 0.31; leaf1.rotation.z = 0.35;
-    const leaf2 = new THREE.Mesh(leafGeo, leafMat); leaf2.scale.set(0.7, 0.1, 0.32); leaf2.position.set(-0.18, 0.02, 0.05); leaf2.rotation.set(0, 0.5, -0.45);
-    leafPivot.add(leaf1, leaf2);
-
-    // กิ๊บเหรียญ ₿
-    const clipGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.045, 32); clipGeo.rotateX(Math.PI / 2);
-    stickOn(new THREE.Mesh(clipGeo, [gold, faceBack, gold]), -0.56, 0.68, 0.03);
-
-    // ตา
-    const eyes = [], pupils = [];
-    [-0.33, 0.33].forEach(x => {
-        const eye = new THREE.Group(); eye.position.set(x, 0.2, surfZ(x, 0.2) - 0.01);
-        const w = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 16), white); w.scale.z = 0.45;
-        const pg = new THREE.Group(); pg.position.z = 0.07;
-        const p = new THREE.Mesh(new THREE.SphereGeometry(0.11, 24, 12), black); p.scale.z = 0.5;
-        const sh = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-        sh.position.set(0.04, 0.05, 0.05);
-        pg.add(p, sh); eye.add(w, pg); body.add(eye);
-        // ขนตางอนๆ ด้านนอกของตา
-        [0.62, 0.8, 1.0].forEach(f => {
-            const a = x < 0 ? Math.PI * f : Math.PI * (1 - f);
-            const lash = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.1, 0.02), black);
-            lash.position.set(Math.cos(a) * 0.22, Math.sin(a) * 0.22, 0.03); lash.rotation.z = a - Math.PI / 2;
-            eye.add(lash);
-        });
-        eyes.push(eye); pupils.push(pg);
+    // แขน (pivot ที่ไหล่)
+    const arms = [-1, 1].map(side => {
+        const pivot = new THREE.Group(); pivot.position.set(side * 0.3, 0.16, 0);
+        const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.075, 16, 10), skin);
+        const arm = outline(new THREE.Mesh(new THREE.CapsuleGeometry(0.055, 0.3, 4, 12), skin)); arm.position.y = -0.2;
+        const hand = outline(new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 10), skin), 1.08); hand.position.y = -0.41;
+        pivot.add(shoulder, arm, hand); body.add(pivot); return pivot;
     });
 
-    // คิ้ว
-    const brows = [-0.33, 0.33].map(x => {
-        const b = new THREE.Mesh(new THREE.BoxGeometry(0.27, 0.055, 0.05), browMat);
-        b.position.set(x, 0.5, surfZ(x, 0.5) + 0.02); b.scale.y = 0.75; body.add(b); return b;
+    // ---- หัว ----
+    const HR = 0.62;
+    const head = new THREE.Group(); head.position.y = 0.86; body.add(head);
+    head.add(outline(new THREE.Mesh(new THREE.SphereGeometry(HR, 48, 32), skin), 1.025));
+    const hz = (x, y) => Math.sqrt(Math.max(0, HR * HR - x * x - y * y));
+    const Z = new THREE.Vector3(0, 0, 1);
+    const onHead = (m, x, y, off = 0.005) => {   // แปะชิ้นส่วนบนผิวหัว หันตามแนวผิว
+        const z = hz(x, y); m.position.set(x, y, z + off);
+        m.quaternion.setFromUnitVectors(Z, new THREE.Vector3(x, y, z).normalize());
+        head.add(m); return m;
+    };
+    const facePlane = (tex, w, h, order) => {
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+        m.renderOrder = order; return m;
+    };
+
+    // ตาโตสไตล์อนิเมะ (วาดด้วย canvas)
+    const scleraTex = canvasTexture(256, 256, g => {
+        g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(128, 142, 92, 104, 0, 0, Math.PI * 2); g.fill();
+        g.save(); g.clip(); g.fillStyle = 'rgba(150,120,170,0.35)'; g.fillRect(0, 0, 256, 92); g.restore();
+    });
+    const irisTex = canvasTexture(256, 256, g => {
+        const gr = g.createLinearGradient(0, 60, 0, 232); gr.addColorStop(0, '#2c1046'); gr.addColorStop(1, '#b98ae6');
+        g.fillStyle = gr; g.beginPath(); g.ellipse(128, 148, 64, 88, 0, 0, Math.PI * 2); g.fill();
+        g.lineWidth = 6; g.strokeStyle = '#24103a'; g.stroke();
+        g.fillStyle = '#1b0a2c'; g.beginPath(); g.ellipse(128, 140, 30, 44, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(102, 104, 22, 28, -0.3, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.arc(156, 192, 11, 0, Math.PI * 2); g.fill();
+    });
+    const lashTex = canvasTexture(256, 256, g => {
+        g.strokeStyle = '#2a1020'; g.lineCap = 'round'; g.lineWidth = 20;
+        g.beginPath(); g.moveTo(30, 108); g.quadraticCurveTo(120, 14, 222, 76); g.stroke();
+        g.lineWidth = 12; g.beginPath(); g.moveTo(214, 72); g.lineTo(248, 52); g.stroke();
+        g.lineWidth = 6; g.beginPath(); g.moveTo(70, 238); g.quadraticCurveTo(128, 252, 186, 236); g.stroke();
+    });
+    const happyTex = canvasTexture(256, 256, g => {
+        g.strokeStyle = '#2a1020'; g.lineCap = 'round'; g.lineWidth = 22;
+        g.beginPath(); g.moveTo(40, 176); g.quadraticCurveTo(128, 40, 216, 176); g.stroke();
+    });
+    const eyes = [], irises = [], eyeOpen = [], eyeHappy = [];
+    [-0.22, 0.22].forEach(x => {
+        const eye = onHead(new THREE.Group(), x, -0.08, 0.004);
+        const holder = new THREE.Group(); if (x < 0) holder.scale.x = -1; eye.add(holder);
+        const open = new THREE.Group(); holder.add(open);
+        const iris = facePlane(irisTex, 0.29, 0.32, 2); iris.position.z = 0.002; iris.userData.sign = x < 0 ? -1 : 1;
+        const lash = facePlane(lashTex, 0.33, 0.34, 3); lash.position.set(0, 0.01, 0.004);
+        open.add(facePlane(scleraTex, 0.29, 0.32, 1), iris, lash);
+        const happy = facePlane(happyTex, 0.28, 0.28, 3); happy.position.z = 0.004; happy.visible = false; holder.add(happy);
+        eyes.push(eye); irises.push(iris); eyeOpen.push(open); eyeHappy.push(happy);
+    });
+
+    // คิ้ว (ลอยหน้าผมหน้าม้าแบบอนิเมะ)
+    const brows = [-0.21, 0.21].map(x => {
+        const g = onHead(new THREE.Group(), x, 0.15, 0.075);
+        const b = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.022, 0.01), hairDark); g.add(b); return b;
     });
 
     // ปาก (สร้างไว้ทุกแบบแล้วสลับการแสดงผล)
-    const mouth = new THREE.Group(); mouth.position.set(0, -0.28, surfZ(0, -0.28) + 0.01); mouth.rotation.x = 0.3; body.add(mouth);
-    const arcGeo = new THREE.TorusGeometry(0.2, 0.04, 12, 32, Math.PI);
+    const mouthHolder = onHead(new THREE.Group(), 0, -0.33, 0.008); mouthHolder.scale.setScalar(0.38);
+    const mouth = new THREE.Group(); mouthHolder.add(mouth);
+    const arcGeo = new THREE.TorusGeometry(0.2, 0.045, 12, 32, Math.PI);
     const mouths = {
         smile: new THREE.Mesh(arcGeo, mouthMat),
         frown: new THREE.Mesh(arcGeo, mouthMat),
-        flat: new THREE.Mesh(new THREE.CapsuleGeometry(0.035, 0.26, 4, 12), mouthMat),
+        flat: new THREE.Mesh(new THREE.CapsuleGeometry(0.04, 0.12, 4, 12), mouthMat),
         grin: new THREE.Group(),
         scream: new THREE.Group(),
     };
@@ -1425,9 +1452,7 @@ function initMascot() {
         const half = new THREE.Mesh(new THREE.CircleGeometry(0.28, 32, Math.PI, Math.PI), mouthInner);
         const tongue = new THREE.Mesh(new THREE.CircleGeometry(0.14, 24, Math.PI, Math.PI), tongueMat);
         tongue.position.set(0, -0.12, 0.004); tongue.scale.y = 0.8;
-        const teeth = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.06, 0.01), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-        teeth.position.set(0, -0.03, 0.006);
-        mouths.grin.add(half, tongue, teeth); mouths.grin.position.y = 0.06;
+        mouths.grin.add(half, tongue); mouths.grin.position.y = 0.06;
     }
     {
         const o = new THREE.Mesh(new THREE.CircleGeometry(0.16, 32), mouthInner); o.scale.y = 1.4;
@@ -1436,42 +1461,59 @@ function initMascot() {
     }
     Object.values(mouths).forEach(m => { m.visible = false; mouth.add(m); });
 
-    // แก้มแดง
-    const cheekMat = new THREE.MeshBasicMaterial({ color: 0xff7a8a, transparent: true, opacity: 0, depthWrite: false });
-    [-0.6, 0.6].forEach(x => stickOn(new THREE.Mesh(new THREE.CircleGeometry(0.13, 24), cheekMat), x, -0.08, 0.012));
+    // แก้มแดงแบบอนิเมะ (วงชมพู + ขีดเฉียง)
+    const blushTex = canvasTexture(128, 64, (g, w, h) => {
+        const gr = g.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w / 2);
+        gr.addColorStop(0, 'rgba(255,110,140,0.85)'); gr.addColorStop(1, 'rgba(255,110,140,0)');
+        g.fillStyle = gr; g.fillRect(0, 0, w, h);
+        g.strokeStyle = 'rgba(214,52,92,0.9)'; g.lineWidth = 4; g.lineCap = 'round';
+        [40, 62, 84].forEach(x => { g.beginPath(); g.moveTo(x + 8, 20); g.lineTo(x - 4, 44); g.stroke(); });
+    });
+    const cheekMat = new THREE.MeshBasicMaterial({ map: blushTex, transparent: true, opacity: 0.35, depthWrite: false });
+    [-0.36, 0.36].forEach(x => onHead(new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.1), cheekMat), x, -0.23, 0.006).renderOrder = 1);
 
     // แว่นกันแดด (ตอนพุ่งไปดวงจันทร์)
     const glasses = new THREE.Group();
-    [-0.34, 0.34].forEach(x => {
-        const l = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.26, 0.05), glassMat); l.position.x = x; glasses.add(l);
+    [-0.21, 0.21].forEach(x => {
+        const l = new THREE.Mesh(new THREE.BoxGeometry(0.31, 0.22, 0.03), glassMat); l.position.x = x; l.rotation.y = x * 1.4; glasses.add(l);
     });
-    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.05, 0.04), glassMat); bridge.position.y = 0.06; glasses.add(bridge);
-    glasses.position.set(0, 0.22, surfZ(0.34, 0.22) + 0.1); glasses.visible = false; body.add(glasses);
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.03, 0.03), glassMat); bridge.position.y = 0.04; glasses.add(bridge);
+    glasses.position.set(0, -0.08, hz(0.22, -0.08) + 0.06); glasses.visible = false; head.add(glasses);
 
-    // แขน
-    const arms = [-1, 1].map(side => {
-        const pivot = new THREE.Group(); pivot.position.set(side * 0.98, -0.05, 0);
-        const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.065, 0.42, 4, 12), peelDark); arm.position.y = -0.3;
-        const hand = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 12), white); hand.position.y = -0.6;
-        pivot.add(arm, hand); body.add(pivot); return pivot;
+    // ---- ผมชมพูยาว ----
+    head.add(new THREE.Mesh(new THREE.SphereGeometry(HR + 0.045, 48, 24, 0, Math.PI * 2, 0, Math.PI * 0.36), hair));
+    head.add(outline(new THREE.Mesh(new THREE.SphereGeometry(HR + 0.04, 48, 24, Math.PI, Math.PI, 0, Math.PI * 0.8), hair), 1.025));
+    const bangGeo = new THREE.ConeGeometry(1, 1, 10); bangGeo.rotateX(Math.PI);
+    [[-0.56, 0.36, 0.13], [-0.38, 0.31, 0.12], [-0.19, 0.27, 0.115], [0, 0.25, 0.11], [0.19, 0.27, 0.115], [0.38, 0.31, 0.12], [0.56, 0.36, 0.13]].forEach(([a, L, w]) => {
+        const b = outline(new THREE.Mesh(bangGeo, hair), 1.07);
+        const yc = 0.33 - L / 2, rh = Math.sqrt((HR + 0.03) ** 2 - yc * yc);
+        b.scale.set(w, L, w * 0.55); b.position.set(Math.sin(a) * rh, yc, Math.cos(a) * rh);
+        b.rotation.order = 'YXZ'; b.rotation.set(-0.3, a, 0); head.add(b);
     });
-
-    // ขา
-    [-0.34, 0.34].forEach(x => {
-        const g = new THREE.Group(); g.position.set(x, -0.95, 0);
-        const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.2, 4, 10), peelDark); leg.position.y = -0.12;
-        const shoe = new THREE.Mesh(new THREE.SphereGeometry(0.16, 20, 12), shoeMat); shoe.scale.set(1, 0.55, 1.4); shoe.position.set(0, -0.3, 0.07);
-        g.add(leg, shoe); body.add(g);
+    [-1, 1].forEach(s => {   // ปอยผมข้างแก้ม ยาวถึงเอว
+        const lock = outline(new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.95, 4, 12), hair), 1.05);
+        lock.scale.z = 0.6; lock.position.set(s * 0.55, -0.48, 0.18); lock.rotation.z = s * 0.06; head.add(lock);
     });
-    const BOT_BASE_Y = GROUND + 1.42;
+    const hairBack = outline(new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.9, 6, 20), hair), 1.03);
+    hairBack.scale.set(1.45, 1, 0.42); hairBack.position.set(0, -0.62, -0.32); head.add(hairBack);
+    const ahoge = outline(new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.03, 8, 20, Math.PI * 0.85), hair), 1.1);
+    ahoge.position.set(-0.08, HR - 0.02, 0.02); ahoge.rotation.set(0, 0.3, 0.2); head.add(ahoge);
 
-    // น้ำตา / เหงื่อ
+    // กิ๊บลูกส้ม (เอกลักษณ์ส้มจี๊ด) + กิ๊บเหรียญ ₿
+    const clip = new THREE.Group();
+    const clipLeaf = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 8), leafMat); clipLeaf.scale.set(1, 0.3, 0.55); clipLeaf.position.set(0.05, 0.07, 0); clipLeaf.rotation.z = 0.5;
+    clip.add(outline(new THREE.Mesh(new THREE.SphereGeometry(0.075, 20, 14), orangeMat), 1.08), clipLeaf);
+    onHead(clip, 0.42, 0.3, 0.06);
+    const coinClipGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.025, 28); coinClipGeo.rotateX(Math.PI / 2);
+    onHead(new THREE.Mesh(coinClipGeo, [gold, faceBack, gold]), -0.43, 0.3, 0.06);
+
+    // น้ำตา / เหงื่อตกแบบการ์ตูน
     const dropGeo = new THREE.SphereGeometry(0.055, 14, 10);
-    const tears = [-0.33, 0.33].map((x, i) => {
-        const d = new THREE.Mesh(dropGeo, dropMat); d.scale.y = 1.5; d.visible = false; d.userData = { x, t: i * 0.5 }; body.add(d); return d;
+    const tears = [-0.21, 0.21].map((x, i) => {
+        const d = new THREE.Mesh(dropGeo, dropMat); d.scale.set(0.6, 0.9, 0.6); d.visible = false; d.userData = { x, t: i * 0.5 }; head.add(d); return d;
     });
     const sweats = [0, 1, 2].map(i => {
-        const d = new THREE.Mesh(dropGeo, dropMat); d.scale.y = 1.5; d.visible = false; d.userData = { t: i / 3, side: i % 2 ? 1 : -1 }; body.add(d); return d;
+        const d = new THREE.Mesh(dropGeo, dropMat); d.scale.set(0.9, 1.3, 0.9); d.visible = false; d.userData = { t: i / 3, side: i % 2 ? 1 : -1 }; head.add(d); return d;
     });
 
     // เมฆฝน + ฟ้าผ่า
@@ -1537,7 +1579,7 @@ function initMascot() {
         const cx = bot.position.x;
         if (pMode === 'rain' || pMode === 'storm') {
             const spread = pMode === 'storm' ? 1.5 : 0.75;
-            pPos[i3] = cx + (Math.random() - 0.5) * spread * 2; pPos[i3 + 1] = initial ? lerp(GROUND, 1.5, Math.random()) : 1.55; pPos[i3 + 2] = (Math.random() - 0.5) * 0.8;
+            pPos[i3] = cx + (Math.random() - 0.5) * spread * 2; pPos[i3 + 1] = initial ? lerp(GROUND, 1.9, Math.random()) : 1.95; pPos[i3 + 2] = (Math.random() - 0.5) * 0.8;
             pVel[i3] = pMode === 'storm' ? -0.8 : 0; pVel[i3 + 1] = -(pMode === 'storm' ? 6 + Math.random() * 2 : 3.5 + Math.random()); pVel[i3 + 2] = 0;
         } else {
             pPos[i3] = (Math.random() - 0.5) * 6; pPos[i3 + 1] = initial ? lerp(GROUND, 2.2, Math.random()) : GROUND + Math.random() * 0.3; pPos[i3 + 2] = (Math.random() - 0.5) * 2 - 0.3;
@@ -1576,7 +1618,9 @@ function initMascot() {
         mood = key; target = MOODS[key]; moodT = 0;
         Object.entries(mouths).forEach(([k, m]) => { m.visible = k === target.mouth; });
         mouth.scale.setScalar(0.5);
-        glasses.visible = !!target.glasses; glasses.position.y = 1.3;
+        glasses.visible = !!target.glasses; glasses.position.y = 0.8;
+        const happyEyes = target.eyes === 'happy';
+        eyeOpen.forEach(o => o.visible = !happyEyes); eyeHappy.forEach(h => h.visible = happyEyes);
         rimTarget.setHex(target.rim);
         if (target.cloud) { cloudTarget.setHex(target.cloud); cloud.visible = true; }
         tears.forEach(d => d.visible = !!target.tears);
@@ -1627,9 +1671,9 @@ function initMascot() {
         for (const p of ['bounce', 'speed', 'brow', 'browY', 'arms', 'wave', 'eye']) cur[p] = lerp(cur[p], target[p], k);
         cur.droop = lerp(cur.droop, target.droop || 0, k);
         cur.shake = lerp(cur.shake, target.shake || 0, k);
-        cur.cheek = lerp(cur.cheek, target.cheeks ? 0.55 : 0, k);
+        cur.cheek = lerp(cur.cheek, target.cheeks ? 0.95 : 0.4, k);
         cur.cloud = lerp(cur.cloud, target.cloud ? 1 : 0, damp(dt, 4));
-        rim.color.lerp(rimTarget, k); fill.color.lerp(rimTarget, k);
+        rim.color.lerp(rimTarget, k);
         cloudMat.color.lerp(cloudTarget, k);
 
         phase += dt * cur.speed * motion;
@@ -1651,58 +1695,62 @@ function initMascot() {
         const shake = cur.shake * motion;
         bot.position.x += shake ? (Math.random() - 0.5) * shake : 0;
 
-        body.rotation.y = gaze.x * 0.35 + Math.sin(t * 0.7) * 0.12 * motion + spin;
-        body.rotation.x = cur.droop - gaze.y * 0.08;
+        body.rotation.y = gaze.x * 0.25 + Math.sin(t * 0.7) * 0.1 * motion + spin;
+        body.rotation.x = cur.droop * 0.3;
         body.rotation.z = Math.sin(phase * 0.5) * cur.bounce * 0.5;
-        const squash = 1 - hop * 0.25;
-        body.scale.set(1 + hop * 0.12, squash, 1);
+        const squash = 1 - hop * 0.2;
+        body.scale.set(1 + hop * 0.08, squash, 1);
+
+        // หัว: เอียงคอแบบอนิเมะ + ก้มตอนเศร้า + มองตาม
+        head.rotation.x = cur.droop * 1.4 - gaze.y * 0.12;
+        head.rotation.y = gaze.x * 0.25;
+        head.rotation.z = Math.sin(t * 0.9) * 0.05 * motion + (mood === 'neutral' ? 0.08 : 0);
+        hairBack.rotation.z = Math.sin(phase) * cur.bounce * 0.5;
 
         // ตา: กะพริบ + มองตาม
         blinkAt -= dt;
         if (blinkAt <= 0 && blinkT < 0) { blinkT = 0; blinkAt = 2.5 + Math.random() * 3; }
         let blink = 1;
         if (blinkT >= 0) { blinkT += dt / 0.16; blink = Math.max(0.08, Math.abs(1 - 2 * Math.min(blinkT, 1))); if (blinkT >= 1) blinkT = -1; }
-        eyes.forEach(e => e.scale.set(cur.eye, cur.eye * blink, cur.eye));
-        const jitter = mood === 'panic' ? Math.sin(t * 40) * 0.015 : 0;
-        pupils.forEach(p => p.position.set(gaze.x * 0.06 + jitter, gaze.y * 0.05 - (mood === 'sad' ? 0.04 : 0), 0.07));
+        eyes.forEach(e => e.scale.set(cur.eye, cur.eye * blink, 1));
+        const jitter = mood === 'panic' ? Math.sin(t * 40) * 0.008 : 0;
+        irises.forEach(p => {
+            p.position.x = (gaze.x * 0.025 + jitter) * p.userData.sign;
+            p.position.y = gaze.y * 0.02 - (mood === 'sad' ? 0.015 : 0);
+            const sz = lerp(p.scale.x, mood === 'panic' ? 0.68 : 1, damp(dt, 8)); p.scale.set(sz, sz, 1);
+        });
 
         brows[0].rotation.z = cur.brow; brows[1].rotation.z = -cur.brow;
-        brows.forEach(b => b.position.y = 0.5 + cur.browY + (mood === 'panic' ? Math.sin(t * 25) * 0.01 : 0));
+        brows.forEach(b => b.position.y = cur.browY * 0.5 + (mood === 'panic' ? Math.sin(t * 25) * 0.005 : 0));
 
         mouth.scale.setScalar(lerp(mouth.scale.x, 1, damp(dt, 10)));
         if (target.mouth === 'scream') mouths.scream.scale.y = 1 + Math.sin(t * 18) * 0.12;
         cheekMat.opacity = cur.cheek;
-        if (glasses.visible) glasses.position.y = lerp(glasses.position.y, 0.22, damp(dt, 8));
+        if (glasses.visible) glasses.position.y = lerp(glasses.position.y, -0.08, damp(dt, 8));
 
         // แขน: ยกขึ้น + โบกมือ
         const wave = Math.sin(t * 9 * motion) * cur.wave;
         arms[0].rotation.z = -(cur.arms + (mood === 'moon' ? wave * 0.6 : 0)) - (mood === 'panic' ? Math.sin(t * 22) * 0.12 : 0);
         arms[1].rotation.z = cur.arms + wave + (mood === 'panic' ? Math.sin(t * 22 + 1) * 0.12 : 0);
 
-        // ใบส้ม: ดุ๊กดิ๊กตอนดีใจ เหี่ยวตอนเศร้า
-        const leafDroop = mood === 'sad' ? -0.55 : mood === 'panic' ? -0.3 : 0;
-        leafPivot.rotation.z = lerp(leafPivot.rotation.z, leafDroop + Math.sin(phase * 2) * cur.bounce * 1.5 + (mood === 'panic' ? Math.sin(t * 30) * 0.1 : 0), damp(dt, 6));
-
-        // น้ำตา / เหงื่อ
+        // น้ำตาไหลอาบแก้ม / เหงื่อกระเด็น
         tears.forEach(d => {
             if (!d.visible) return;
-            d.userData.t = (d.userData.t + dt * 0.7) % 1;
-            const u = d.userData.t;
-            const tx = d.userData.x + (d.userData.x > 0 ? 0.08 : -0.08), ty = 0.02 - u * 0.95;
-            d.position.set(tx, ty, surfZ(tx, ty) + 0.05);
-            d.material.opacity = 0.85;
+            d.userData.t = (d.userData.t + dt * 0.8) % 1;
+            const u = d.userData.t, tx = d.userData.x * 1.3, ty = -0.22 - u * 0.33;
+            d.position.set(tx, ty, hz(tx, ty) + 0.02);
         });
         sweats.forEach(d => {
             if (!d.visible) return;
             d.userData.t = (d.userData.t + dt * 1.3) % 1;
             const u = d.userData.t, s = d.userData.side;
-            d.position.set(s * (0.75 + u * 0.6), 0.75 + Math.sin(u * Math.PI) * 0.35 - u * 0.4, 0.1);
+            d.position.set(s * (0.55 + u * 0.4), 0.3 + Math.sin(u * Math.PI) * 0.25 - u * 0.3, 0.2);
         });
 
         // เมฆ
         cloud.scale.setScalar(Math.max(0.001, cur.cloud * 0.8));
         cloud.visible = cur.cloud > 0.01;
-        cloud.position.set(bot.position.x, 1.72 + Math.sin(t * 1.2) * 0.05, 0.1);
+        cloud.position.set(bot.position.x, 2.12 + Math.sin(t * 1.2) * 0.05, 0.1);
         let flashI = 0;
         if (target.flash) {
             flashCD -= dt;
