@@ -1341,12 +1341,35 @@ function initMascot() {
         for (let y = 0; y < h; y += 4) for (let x = (y / 4) % 2 * 2; x < w; x += 4) { g.fillStyle = '#6a6a6a'; g.fillRect(x, y, 2, 2); }
     });
     fabric.wrapS = fabric.wrapT = THREE.RepeatWrapping; fabric.repeat.set(6, 6);
-    const skin = new THREE.MeshPhysicalMaterial({ color: 0xd59a72, roughness: 0.55, sheen: 0.4, sheenColor: 0xffc4a0, sheenRoughness: 0.6 });
-    const lipMat = new THREE.MeshStandardMaterial({ color: 0xb4595a, roughness: 0.45 });
+    const pores = noiseTex();
+    const skin = new THREE.MeshPhysicalMaterial({ color: 0xd49b74, roughness: 0.5, bumpMap: pores, bumpScale: 0.08, sheen: 0.35, sheenColor: 0xffc4a0, sheenRoughness: 0.6 });
+    const faceSkinTex = canvasTexture(1024, 512, (g, w, h) => {   // สีผิวหน้า: เลือดฝาดที่แก้ม จมูก หู + เงาใต้คาง
+        g.fillStyle = '#d49b74'; g.fillRect(0, 0, w, h);
+        const blob = (u, v, r, c) => { const gr = g.createRadialGradient(u * w, v * h, 0, u * w, v * h, r); gr.addColorStop(0, c); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); };
+        blob(0.19, 0.42, 70, 'rgba(205,95,85,0.28)'); blob(0.31, 0.42, 70, 'rgba(205,95,85,0.28)');
+        blob(0.25, 0.47, 30, 'rgba(200,100,90,0.22)'); blob(0.0, 0.5, 60, 'rgba(200,95,85,0.25)'); blob(0.5, 0.5, 60, 'rgba(200,95,85,0.25)'); blob(1.0, 0.5, 60, 'rgba(200,95,85,0.25)');
+        const gr = g.createLinearGradient(0, h * 0.62, 0, h); gr.addColorStop(0, 'rgba(120,60,40,0)'); gr.addColorStop(1, 'rgba(120,60,40,0.35)'); g.fillStyle = gr; g.fillRect(0, h * 0.62, w, h * 0.38);
+        for (let i = 0; i < 4000; i++) { g.fillStyle = Math.random() < 0.5 ? 'rgba(150,80,55,0.08)' : 'rgba(240,190,160,0.08)'; g.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+    });
+    const faceSkin = new THREE.MeshPhysicalMaterial({ map: faceSkinTex, roughness: 0.48, bumpMap: pores, bumpScale: 0.06, sheen: 0.35, sheenColor: 0xffc4a0, sheenRoughness: 0.6 });
+    const lipMat = new THREE.MeshPhysicalMaterial({ color: 0xa8625d, roughness: 0.38, clearcoat: 0.3 });
     const mouthIn = new THREE.MeshStandardMaterial({ color: 0x3a0f12, roughness: 0.8 });
     const teethMat = new THREE.MeshStandardMaterial({ color: 0xfbf7ee, roughness: 0.3 });
     const hairMat = new THREE.MeshStandardMaterial({ color: 0x2a1b12, roughness: 0.6, metalness: 0.05 });
-    const jersey = new THREE.MeshStandardMaterial({ color: 0xffe01b, roughness: 0.75, bumpMap: fabric, bumpScale: 0.6 });
+    const folds = canvasTexture(512, 512, (g, w, h) => {   // รอยยับผ้า + ลายตาข่ายเสื้อกีฬา (ใช้เป็น bump)
+        g.fillStyle = '#808080'; g.fillRect(0, 0, w, h);
+        const fold = (pts, light) => {
+            [[34, 0.05], [20, 0.07], [9, 0.09]].forEach(([lw, a]) => {
+                g.strokeStyle = light ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${a})`; g.lineWidth = lw; g.lineCap = 'round';
+                g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x * w, y * h) : g.moveTo(x * w, y * h)); g.stroke();
+            });
+        };
+        for (let i = 0; i < 7; i++) { const y = 0.66 + i * 0.045, ph = Math.random() * 6; fold([...Array(9)].map((_, k) => [k / 8, y + Math.sin(k + ph) * 0.012]), i % 2); }   // ยับแนวนอนช่วงเอว
+        [[0.22, 0.12], [0.28, 0.16], [0.72, 0.12], [0.78, 0.16]].forEach(([u, v], i) => fold([[u, v], [u + (u < 0.5 ? -0.1 : 0.1), v + 0.35]], i % 2));   // ยับเฉียงจากรักแร้
+        [[0.03, 0.3], [0.97, 0.3], [0.06, 0.45]].forEach(([u, v], i) => fold([[u, v], [u + 0.01, v + 0.3]], i % 2));
+        for (let y = 0; y < h; y += 3) for (let x = (y / 3) % 2 * 1.5; x < w; x += 3) { g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(x, y, 1.5, 1.5); }
+    });
+    const jersey = new THREE.MeshStandardMaterial({ color: 0xffe01b, roughness: 0.78, bumpMap: folds, bumpScale: 2.2 });
     const trimBlue = new THREE.MeshStandardMaterial({ color: 0x1f4fbf, roughness: 0.6 });
     const trimGreen = new THREE.MeshStandardMaterial({ color: 0x1d9a48, roughness: 0.6 });
     const shortsMat = new THREE.MeshStandardMaterial({ color: 0x17171b, roughness: 0.8, bumpMap: fabric, bumpScale: 0.4 });
@@ -1380,6 +1403,14 @@ function initMascot() {
     // ปกเสื้อ + ขอบปก
     const collar = new THREE.Mesh(new THREE.TorusGeometry(0.135, 0.032, 12, 40), jersey); collar.rotation.x = Math.PI / 2 - 0.15; collar.position.set(0, 0.66, 0.01); collar.scale.y = 0.8; body.add(collar);
     const collarB = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.012, 8, 40), trimBlue); collarB.rotation.x = Math.PI / 2 - 0.15; collarB.position.set(0, 0.665, 0.012); collarB.scale.y = 0.8; body.add(collarB);
+    [-1, 1].forEach(s => {   // ปกเสื้อโปโล (พับลงบนอก) + ขอบน้ำเงินเขียว
+        const sh = new THREE.Shape(); sh.moveTo(0.0, 0.0); sh.lineTo(0.14, 0.02); sh.lineTo(0.1, -0.1); sh.lineTo(0.015, -0.075); sh.closePath();
+        const flap = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.012, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.004, bevelSegments: 2 }), jersey);
+        flap.position.set(s * 0.025, 0.675, 0.125); flap.scale.x = s; flap.rotation.set(-0.35, s * 0.55, 0); body.add(flap);
+        const edge = new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(0.14, 0.02, 0.014), new THREE.Vector3(0.1, -0.1, 0.014)), 4, 0.007, 6), trimBlue);
+        const edgeG = new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(0.125, 0.015, 0.016), new THREE.Vector3(0.088, -0.092, 0.016)), 4, 0.005, 6), trimGreen);
+        flap.add(edge, edgeG);
+    });
     const placket = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.16, 0.01), jersey); placket.position.set(0, 0.56, 0.22); placket.rotation.x = -0.25; body.add(placket);
     // สร้อยคอเชือกดำ
     const cord = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.006, 6, 40, Math.PI * 1.1), cordMat); cord.rotation.set(0.25, 0, Math.PI * 1.45); cord.position.set(0, 0.6, 0.15); cord.scale.y = 1.4; body.add(cord);
@@ -1391,20 +1422,35 @@ function initMascot() {
         const sg = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.38, 0.025), trimGreen); sg.position.set(s * 0.324, -0.56, 0.06); sg.rotation.z = s * 0.04; body.add(sg);
     });
 
+    // แขนขาแบบเนื้อเดียวต่อเนื่อง: ท่อเรียวตามเส้นโค้ง รัศมีเปลี่ยนไล่ตามจุด (มีกล้ามน่อง/ข้อพับ)
+    function limb(pts, radii, mat, seg = 32, rad = 22) {
+        const curve = new THREE.CatmullRomCurve3(pts.map(q => new THREE.Vector3(...q)));
+        const frames = curve.computeFrenetFrames(seg, false);
+        const rAt = t => { const f = t * (radii.length - 1), i = Math.min(radii.length - 2, Math.floor(f)), u = f - i, sm = u * u * (3 - 2 * u); return lerp(radii[i], radii[i + 1], sm); };
+        const pos = [], idx = [];
+        for (let i = 0; i <= seg; i++) {
+            const t = i / seg, c = curve.getPointAt(t), r = rAt(t), N = frames.normals[i], B = frames.binormals[i];
+            for (let j = 0; j < rad; j++) { const a = j / rad * Math.PI * 2, cs = Math.cos(a) * r, sn = Math.sin(a) * r; pos.push(c.x + N.x * cs + B.x * sn, c.y + N.y * cs + B.y * sn, c.z + N.z * cs + B.z * sn); }
+        }
+        for (let i = 0; i < seg; i++) for (let j = 0; j < rad; j++) { const a = i * rad + j, b = i * rad + (j + 1) % rad, c = a + rad, d = b + rad; idx.push(a, b, c, b, d, c); }
+        const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+        const g = new THREE.Group(); g.add(new THREE.Mesh(geo, mat));
+        [[0, radii[0]], [1, radii[radii.length - 1]]].forEach(([t, r]) => { const e = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), mat); e.position.copy(curve.getPointAt(t)); g.add(e); });
+        return g;
+    }
+
     // ขา + ถุงเท้า + รองเท้าผ้าใบ
     const legs = [-0.15, 0.15].map(x => {
         const g = new THREE.Group(); g.position.set(x, -0.7, 0);
         const hem = new THREE.Mesh(new THREE.CylinderGeometry(0.135, 0.15, 0.14, 24), shortsMat); hem.position.y = -0.04;
-        const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.085, 0.42, 20), skin); thigh.position.y = -0.27;
-        const knee = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 12), skin); knee.position.y = -0.48;
-        const calf = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.06, 0.3, 20), skin); calf.position.y = -0.63;
+        const leg = limb([[0, -0.06, 0], [0, -0.28, 0.012], [0, -0.48, 0.022], [0, -0.64, 0.0], [0, -0.79, -0.008]], [0.112, 0.104, 0.09, 0.08, 0.084, 0.078, 0.064, 0.056], skin);
         const sock = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.056, 0.1, 20), sockMat); sock.position.y = -0.79;
         const shoe = new THREE.Group(); shoe.position.set(0, -0.86, 0.04);
         const up = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.16, 6, 16), shoeMat); up.rotation.x = Math.PI / 2; up.scale.set(1, 1, 0.75); up.position.y = 0.0;
         const sole = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.035, 0.33), shoeDark); sole.position.set(0, -0.055, 0.0);
         const swoosh = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.025, 0.14), shoeDark); swoosh.position.set(x > 0 ? 0.077 : -0.077, 0.0, 0.0);
         shoe.add(up, sole, swoosh);
-        g.add(hem, thigh, knee, calf, sock, shoe); body.add(g); return g;
+        g.add(hem, leg, sock, shoe); body.add(g); return g;
     });
     const BOT_BASE_Y = GROUND + 1.64 * S_BOT;
 
@@ -1424,11 +1470,9 @@ function initMascot() {
         const shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.1, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2), jersey); shoulder.position.y = 0.04;
         const cuffB = new THREE.Mesh(new THREE.TorusGeometry(0.093, 0.011, 8, 28), trimBlue); cuffB.rotation.x = Math.PI / 2; cuffB.position.y = -0.21;
         const cuffG = new THREE.Mesh(new THREE.TorusGeometry(0.093, 0.008, 8, 28), trimGreen); cuffG.rotation.x = Math.PI / 2; cuffG.position.y = -0.195;
-        const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.05, 0.28, 18), skin); upper.position.y = -0.3;
-        const elbow = new THREE.Mesh(new THREE.SphereGeometry(0.05, 14, 10), skin); elbow.position.y = -0.44;
-        const fore = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.04, 0.3, 18), skin); fore.position.y = -0.59;
+        const armLimb = limb([[0, -0.14, 0], [0, -0.3, -0.004], [0, -0.44, 0.0], [0, -0.6, 0.02], [0, -0.74, 0.03]], [0.064, 0.06, 0.053, 0.048, 0.05, 0.045, 0.038, 0.034], skin);
         const hand = makeHand(side); hand.position.y = -0.79;
-        pivot.add(sleeve, shoulder, cuffB, cuffG, upper, elbow, fore, hand);
+        pivot.add(sleeve, shoulder, cuffB, cuffG, armLimb, hand);
         if (side < 0) {   // กำไลเชือกข้อมือซ้าย
             [0xb83a3a, 0xe7e2d5, 0x6a4a2a].forEach((c, i) => {
                 const b = new THREE.Mesh(new THREE.TorusGeometry(0.046, 0.006, 6, 24), new THREE.MeshStandardMaterial({ color: c, roughness: 0.8 }));
@@ -1443,24 +1487,40 @@ function initMascot() {
     const head = new THREE.Group(); head.position.y = 1.08; body.add(head);
     const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.085, 0.24, 18), skin); neck.position.y = 0.72; body.add(neck);
     {
-        const g = new THREE.SphereGeometry(HR, 64, 48), p = g.attributes.position;
-        for (let i = 0; i < p.count; i++) {   // คางเรียวเล็กน้อย + หน้าแบนนิดๆ แบบเด็ก
-            let x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-            const ny = y / HR;
-            if (ny < 0) { const k = Math.pow(-ny, 1.8); x *= 1 - 0.22 * k; z *= 1 - 0.1 * k; }
+        const g = new THREE.SphereGeometry(HR, 96, 72), p = g.attributes.position;
+        // ปั้นหน้า: โหนกแก้ม คาง สันคิ้ว เบ้าตา ปาก (นูน/บุ๋มแบบ gaussian ด้านหน้า)
+        const bumps = [[-0.42, -0.3, 0.055, 0.22], [0.42, -0.3, 0.055, 0.22], [0, -0.8, 0.05, 0.2], [-0.3, 0.22, 0.03, 0.22], [0.3, 0.22, 0.03, 0.22],
+                       [-0.32, 0.06, -0.035, 0.15], [0.32, 0.06, -0.035, 0.15], [0, -0.47, 0.035, 0.22], [-0.55, -0.62, -0.03, 0.2], [0.55, -0.62, -0.03, 0.2]];
+        for (let i = 0; i < p.count; i++) {
+            const ux = p.getX(i) / HR, uy = p.getY(i) / HR, uz = p.getZ(i) / HR, w = Math.max(0, uz);
+            let d = 0;
+            for (const [cx, cy, amp, sg] of bumps) d += amp * Math.exp(-((ux - cx) ** 2 + (uy - cy) ** 2) / (sg * sg));
+            const R = HR * (1 + d * w);
+            let x = ux * R, y = uy * R, z = uz * R;
+            if (uy < 0) { const k = Math.pow(-uy, 1.8); x *= 1 - 0.22 * k; z *= 1 - 0.1 * k; }
             p.setXYZ(i, x * HSX, y * HSY, z * HSZ);
         }
         g.computeVertexNormals();
-        head.add(new THREE.Mesh(g, skin));
+        head.add(new THREE.Mesh(g, faceSkin));
     }
     const hz = (x, y) => HSZ * Math.sqrt(Math.max(0, HR * HR - (x / HSX) ** 2 - (y / HSY) ** 2));
     // หู
     [-1, 1].forEach(s => {
-        const ear = new THREE.Mesh(new THREE.SphereGeometry(0.075, 16, 12), skin); ear.scale.set(0.45, 1, 0.8); ear.position.set(s * HR * HSX * 0.97, -0.01, -0.02); ear.rotation.y = s * 0.3; head.add(ear);
+        const ear = new THREE.Group(); ear.position.set(s * HR * HSX * 0.97, -0.01, -0.02); ear.rotation.y = s * 0.35; head.add(ear);
+        const shell = new THREE.Mesh(new THREE.SphereGeometry(0.075, 20, 14), skin); shell.scale.set(0.42, 1, 0.78);
+        const inner = new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 12), new THREE.MeshStandardMaterial({ color: 0xb87a5a, roughness: 0.6 })); inner.scale.set(0.3, 0.8, 0.55); inner.position.x = s * 0.016;
+        const lobe = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 8), skin); lobe.position.set(0, -0.06, 0.01); lobe.scale.set(0.6, 1, 0.8);
+        ear.add(shell, inner, lobe);
     });
     // จมูก + แก้ม
-    const nose = new THREE.Mesh(new THREE.SphereGeometry(0.048, 16, 12), skin); nose.scale.set(0.9, 0.75, 0.85); nose.position.set(0, -0.06, hz(0, -0.06) + 0.012); head.add(nose);
-    [-1, 1].forEach(s => { const n = new THREE.Mesh(new THREE.SphereGeometry(0.022, 10, 8), skin); n.position.set(s * 0.03, -0.075, hz(0, -0.075) + 0.008); head.add(n); });
+    const nose = new THREE.Group(); nose.position.set(0, -0.03, hz(0, -0.03)); head.add(nose);
+    const ridge = new THREE.Mesh(new THREE.CapsuleGeometry(0.02, 0.06, 6, 12), faceSkin); ridge.rotation.x = -0.45; ridge.position.set(0, 0.02, 0.0);
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.034, 20, 14), faceSkin); tip.scale.set(1.05, 0.85, 0.9); tip.position.set(0, -0.03, 0.022);
+    nose.add(ridge, tip);
+    [-1, 1].forEach(s => {
+        const wing = new THREE.Mesh(new THREE.SphereGeometry(0.022, 14, 10), faceSkin); wing.position.set(s * 0.03, -0.04, 0.004); nose.add(wing);
+        const nostril = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 6), mouthIn); nostril.position.set(s * 0.014, -0.056, 0.016); nostril.scale.set(1.3, 0.6, 1); nose.add(nostril);
+    });
 
     // แว่นกันแดดดำ
     const glasses = new THREE.Group(); glasses.position.set(0, 0.05, 0); head.add(glasses);
@@ -1484,7 +1544,7 @@ function initMascot() {
         [-1, 1].forEach(s => {   // ฟันบนเรียงแถว มีช่องเล็กตรงกลาง
             const t = new THREE.Mesh(new THREE.BoxGeometry(w * 0.78, h * 0.32, 0.006), teethMat); t.position.set(s * w * 0.415, h * 0.0, 0.004); g.add(t);
         });
-        const lip = new THREE.Mesh(new THREE.TorusGeometry(w * 0.98, 0.009, 6, 30, Math.PI), lipMat); lip.rotation.z = Math.PI; lip.scale.y = 0.85; lip.position.y = h * 0.12; g.add(lip);
+        const lip = new THREE.Mesh(new THREE.TorusGeometry(w * 0.98, 0.013, 10, 32, Math.PI), lipMat); lip.rotation.z = Math.PI; lip.scale.y = 0.85; lip.position.y = h * 0.12; g.add(lip);
         return g;
     };
     const mouths = {
@@ -1500,22 +1560,26 @@ function initMascot() {
     const cap = new THREE.Mesh(new THREE.SphereGeometry(HR * 1.05, 48, 24, 0, Math.PI * 2, 0, Math.PI * 0.36), hairMat); cap.scale.set(HSX, HSY, HSZ); head.add(cap);
     const capBack = new THREE.Mesh(new THREE.SphereGeometry(HR * 1.04, 48, 24, Math.PI, Math.PI, 0, Math.PI * 0.68), hairMat); capBack.scale.set(HSX, HSY, HSZ); head.add(capBack);
     {
-        const spikeGeo = new THREE.ConeGeometry(0.05, 0.11, 7); spikeGeo.translate(0, 0.05, 0);
-        const N = 260, spikes = new THREE.InstancedMesh(spikeGeo, hairMat, N);
+        const spikeGeo = new THREE.ConeGeometry(0.022, 0.13, 5); spikeGeo.translate(0, 0.06, 0);
+        const N = 1400, spikes = new THREE.InstancedMesh(spikeGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }), N);
+        const shades = [0x1a110b, 0x24170f, 0x2f1f14, 0x3b281a, 0x140d08].map(c => new THREE.Color(c));
         const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), d = new THREE.Vector3(), p = new THREE.Vector3(), sc = new THREE.Vector3();
         let n = 0;
-        for (let i = 0; i < 700 && n < N; i++) {
-            const y = 1 - (i + 0.5) / 700 * 2, r = Math.sqrt(1 - y * y), a = i * 2.39996;
+        for (let i = 0; i < 3600 && n < N; i++) {
+            const y = 1 - (i + 0.5) / 3600 * 2, r = Math.sqrt(1 - y * y), a = i * 2.39996;
             const ux = Math.cos(a) * r, uz = Math.sin(a) * r;
             const front = uz > 0.35;
-            if (y < (front ? 0.42 : uz < -0.2 ? -0.35 : 0.05)) continue;
-            p.set(ux * HR * HSX * 1.02, y * HR * HSY * 1.02, uz * HR * HSZ * 1.02);
-            if (front && y < 0.7) d.set(ux * 0.6, -0.55, uz + 0.25);         // หน้าม้าชี้ลงมาปรกหน้าผาก
-            else d.set(ux, y + 0.25, uz);                                      // ส่วนบนชี้ฟูขึ้น
-            d.normalize(); d.x += (Math.random() - 0.5) * 0.35; d.z += (Math.random() - 0.5) * 0.35; d.normalize();
+            if (y < (front ? 0.4 : uz < -0.2 ? -0.38 : 0.02)) continue;
+            const lift = 0.99 + Math.random() * 0.03;
+            p.set(ux * HR * HSX * lift, y * HR * HSY * lift, uz * HR * HSZ * lift);
+            if (front && y < 0.72) d.set(ux * 0.4, -0.65, uz + 0.25);         // หน้าม้าชี้ลงปรกหน้าผาก
+            else if (y < 0.45) d.set(ux * 0.35, -0.8, uz * 0.35);            // ข้าง/ท้ายทอยแนบหัวชี้ลง
+            else d.set(ux * 0.6, y + 0.9, uz * 0.6);                         // กลางหัวชี้ตั้งขึ้น
+            d.normalize(); d.x += (Math.random() - 0.5) * 0.5; d.z += (Math.random() - 0.5) * 0.5; d.y += (Math.random() - 0.5) * 0.2; d.normalize();
             q.setFromUnitVectors(up, d);
-            const s = 0.7 + Math.random() * 0.5; sc.set(s, s * (front && y < 0.7 ? 0.9 : 1.1), s);
-            m4.compose(p, q, sc); spikes.setMatrixAt(n++, m4);
+            const s = 0.6 + Math.random() * 0.6, len = front && y < 0.72 ? 0.75 : y < 0.45 ? 0.45 : 0.6 + Math.random() * 0.45;
+            sc.set(s, s * len, s);
+            m4.compose(p, q, sc); spikes.setMatrixAt(n, m4); spikes.setColorAt(n, shades[(Math.random() * shades.length) | 0]); n++;
         }
         spikes.count = n; head.add(spikes);
     }
@@ -1526,6 +1590,14 @@ function initMascot() {
         const d = new THREE.Mesh(dropGeo, dropMat); d.scale.set(0.9, 1.3, 0.9); d.visible = false; d.userData = { t: i / 3, side: i % 2 ? 1 : -1 }; head.add(d); return d;
     });
     let lastFaceKey = '';
+
+    // เงาจริง: เงาตกพื้น + เงาบนตัวเอง (หัวทับคอ แขนทับลำตัว)
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02;
+    Object.assign(key.shadow.camera, { left: -2.6, right: 2.6, top: 3, bottom: -2.2, near: 0.5, far: 20 }); key.shadow.camera.updateProjectionMatrix();
+    bot.traverse(o => { if (o.isMesh && !o.material.transparent) { o.castShadow = true; o.receiveShadow = true; } });
+    const groundShadow = new THREE.Mesh(new THREE.PlaneGeometry(9, 5), new THREE.ShadowMaterial({ opacity: 0.32 }));
+    groundShadow.rotation.x = -Math.PI / 2; groundShadow.position.y = GROUND + 0.001; groundShadow.receiveShadow = true; scene.add(groundShadow);
 
     // เมฆฝน + ฟ้าผ่า
     const cloudMat = new THREE.MeshStandardMaterial({ color: 0x8e98a8, roughness: 1 });
