@@ -51,7 +51,7 @@ function readAll(sheets) {
           date: formatDateCell(row[1], tz),
           price: Number(row[2]),
           amountUSD: Number(row[3]),
-          amountBTC: Number(row[4])
+          amountBTC: btcOf(row)
         });
       }
     }
@@ -87,8 +87,23 @@ function findRow(sheet, rowNumber, key) {
   return -1;
 }
 
+// จำนวน BTC ของแถว: ถ้าช่อง BTC ว่าง/เป็น 0/เป็นข้อความ ให้คำนวณจาก ยอดเงิน ÷ ราคา แทน
+function btcOf(row) {
+  const btc = Number(String(row[4]).replace(/,/g, ''));
+  if (btc > 0 && isFinite(btc)) return btc;
+  const price = Number(row[2]), usd = Number(row[3]);
+  return price > 0 && usd > 0 ? usd / price : 0;
+}
+
+// ตั้งรูปแบบตัวเลขช่อง BTC ให้เห็นทศนิยม 8 ตำแหน่ง (ไม่งั้นชีตปัด 0.00012 เป็น 0 ให้ดู)
+function formatBtcCell(sheet, row) {
+  sheet.getRange(row, 5).setNumberFormat("0.00000000");
+}
+
 function validateTx(d) {
-  const price = Number(d.price), amountUSD = Number(d.amountUSD), amountBTC = Number(d.amountBTC);
+  const price = Number(d.price), amountUSD = Number(d.amountUSD);
+  let amountBTC = Number(d.amountBTC);
+  if (!(amountBTC > 0) && price > 0) amountBTC = amountUSD / price;   // กันกรณี client ส่งค่า BTC มาไม่ครบ
   if (!d.date || !/^\d{4}-\d{2}-\d{2}$/.test(String(d.date))) throw new Error("Invalid date.");
   if (!(price > 0) || !(amountUSD > 0) || !(amountBTC > 0) || !isFinite(amountBTC)) throw new Error("Invalid numbers.");
   return [d.date, price, amountUSD, amountBTC];
@@ -126,6 +141,7 @@ function doPost(e) {
     if (requestData.action === 'add') {
       const values = validateTx(requestData);
       sheet.appendRow([new Date()].concat(values));
+      formatBtcCell(sheet, sheet.getLastRow());
 
     } else if (requestData.action === 'update') {
       const values = validateTx(requestData);
@@ -133,6 +149,7 @@ function doPost(e) {
       if (row < 2) throw new Error("Record not found. Please reload.");
       // แก้ไขในแถวเดิมครั้งเดียว (เดิมใช้ ลบ+เพิ่ม ถ้าเพิ่มล้มเหลวข้อมูลจะหาย)
       sheet.getRange(row, 2, 1, 4).setValues([values]);
+      formatBtcCell(sheet, row);
 
     } else if (requestData.action === 'delete') {
       const row = requestData.key ? findRow(sheet, requestData.row, requestData.key) : Number(requestData.row);

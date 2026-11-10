@@ -858,11 +858,18 @@ async function postAction(payload) {
     return data;
 }
 
+// จำนวน BTC ของรายการ: ถ้าชีตส่งมาเป็น 0/ว่าง ให้คำนวณจาก ยอดเงิน ÷ ราคา
+function btcOf(t) {
+    const b = parseFloat(t.amountBTC), p = parseFloat(t.price), u = parseFloat(t.amountUSD);
+    if (b > 0 && isFinite(b)) return b;
+    return p > 0 && u > 0 ? u / p : 0;
+}
+
 function txKey(t) { return t.id ? { id: t.id } : { price: t.price, amountUSD: t.amountUSD }; }
 
 function calculateSummary() {
     const totalUSD = transactions.reduce((sum, t) => sum + parseFloat(t.amountUSD || 0), 0);
-    const totalBTC = transactions.reduce((sum, t) => sum + parseFloat(t.amountBTC || 0), 0);
+    const totalBTC = transactions.reduce((sum, t) => sum + btcOf(t), 0);
     if (totalBTC === 0) return { avgCost: 0, portfolioValue: 0, totalBTC: 0, unrealizedProfit: 0, unrealizedProfitPercent: 0, totalInvested: 0 };
     const avgCost = totalUSD / totalBTC;
     const portfolioValue = btcPriceData.price * totalBTC;
@@ -1051,7 +1058,7 @@ function renderChart() {
     // transactions เรียงใหม่->เก่าอยู่แล้ว แค่กลับด้าน ไม่ต้อง sort ซ้ำ
     const sorted = transactions.slice().reverse();
     let acc = 0; const labels = [], data = [];
-    sorted.forEach(t => { acc += parseFloat(t.amountBTC) || 0; labels.push(parseDate(t.date).toLocaleDateString('en-US', {month:'short',year:'2-digit'})); data.push(acc); });
+    sorted.forEach(t => { acc += btcOf(t); labels.push(parseDate(t.date).toLocaleDateString('en-US', {month:'short',year:'2-digit'})); data.push(acc); });
 
     if (lineChart) {
         lineChart.data.labels = labels;
@@ -1084,7 +1091,7 @@ function renderHistory() {
     if (transactions.length === 0) { historyTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-500 font-num text-xs uppercase tracking-wider">No Transactions Found</td></tr>'; return; }
     
     const rows = transactions.map(t => {
-        const pr = parseFloat(t.price), inv = parseFloat(t.amountUSD), btc = parseFloat(t.amountBTC);
+        const pr = parseFloat(t.price), inv = parseFloat(t.amountUSD), btc = btcOf(t);
         const diff = (btc * btcPriceData.price) - inv, per = inv > 0 ? (diff / inv) * 100 : 0;
         const isP = diff >= 0, color = isP ? 'text-success' : 'text-danger';
         
@@ -1328,7 +1335,7 @@ initializeApp();
 
 function exportToCSV() {
     let csv = "Date,Price(USD),Amount(USD),Amount(BTC)\n";
-    transactions.forEach(t => { const d = parseDate(t.date); csv += `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,0)}-${d.getDate().toString().padStart(2,0)},${t.price},${t.amountUSD},${t.amountBTC}\n`; });
+    transactions.forEach(t => { const d = parseDate(t.date); csv += `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,0)}-${d.getDate().toString().padStart(2,0)},${t.price},${t.amountUSD},${btcOf(t)}\n`; });
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement("a"); link.href = url; link.download = "portfolio.csv"; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
